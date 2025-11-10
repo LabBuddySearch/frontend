@@ -1,44 +1,54 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-  entry: './src/index.js',
+  mode: "development",
+
+  entry: "./src/index.tsx",
   output: {
-    filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist'),
+    filename: "bundle.js",
+    path: path.resolve(__dirname, "dist"),
     clean: true,
-    assetModuleFilename: 'assets/[name][ext][query]',
+    assetModuleFilename: "assets/[name][ext][query]",
+    publicPath: "/",
   },
+
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,
+        test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
         use: {
-          loader: 'babel-loader',
+          loader: "babel-loader",
         },
       },
       {
         test: /\.(png|jpg|jpeg|gif|svg)$/i,
-        type: 'asset/resource',
+        type: "asset/resource",
       },
     ],
   },
+
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: [".ts", ".tsx", ".js", ".jsx"],
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+    },
   },
+
   plugins: [
     new HtmlWebpackPlugin({
-      template: './src/index.html',
+      template: "./public/index.html",
     }),
   ],
+
   devServer: {
     static: {
-      directory: path.join(__dirname, 'dist'),
+      directory: path.join(__dirname, "dist"),
     },
     compress: true,
     port: 3000,
+    hot: true,
     historyApiFallback: true,
   },
-  mode: 'development',
 };
