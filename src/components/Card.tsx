@@ -1,8 +1,15 @@
 import { FC } from "react";
 
-export const Card: FC = () => {
+interface CardProps {
+  onClick?: () => void;
+}
+
+export const Card: FC<CardProps> = ({ onClick }) => {
   return (
-    <div className="h-96 w-72 bg-[#FFFFF5] shadow-md border border-[#FFB4A7] p-4 rounded-xl flex flex-col">
+    <div 
+    onClick={onClick}
+    className="h-96 w-72 bg-[#FFFFF5] shadow-md border border-[#FFB4A7] p-4 rounded-xl flex flex-col"
+    >
       <h2 className="text-xl font-bold text-black text-center">
         Лабораторная работа №1
       </h2>

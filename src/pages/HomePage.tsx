@@ -18,7 +18,7 @@ const HomePage: FC = () => {
       </aside>
       <main className="flex-1">
         <header className="h-[76px]">фильтры</header>
-        <CardsList modalCardId={modalCardId} />
+        <CardsList modalCardId={modalCardId} setModalCardId={setModalCardId}/>
       </main>
     </div>
   );
