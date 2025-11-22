@@ -8,6 +8,7 @@ import MyCardsEditPage from "@/pages/MyCardsEditPage";
 import MyCardsLayout from "@/pages/MyCardsLayout";
 import MyCardsPage from "@/pages/MyCardsPage";
 import NotFoundPage from "@/pages/NotFound";
+import SettingsPage from "@/pages/SettingsPage";
 
 import { PATHS } from "./paths";
 
@@ -26,6 +27,10 @@ export const router = createBrowserRouter([
       {
         path: PATHS.AUTH,
         element: <AuthPage />,
+      },
+      {
+        path: PATHS.SETTINGS,
+        element: <SettingsPage />,
       },
       {
         path: PATHS.MY_CARDS,

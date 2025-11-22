@@ -1,12 +1,17 @@
 import { FC } from "react";
+import { CardData } from "@/types/card";
 
 interface Props {
-  id: string;
+  cardData: CardData;
   isSelected: boolean;
   onClick: () => void;
 }
 
-export const CardMini: FC<Props> = ({ id, isSelected, onClick }: Props) => {
+export const CardMini: FC<Props> = ({ 
+  cardData,
+  isSelected, 
+  onClick
+}: Props) => {
   return (
     <div
       onClick={onClick}
@@ -15,13 +20,13 @@ export const CardMini: FC<Props> = ({ id, isSelected, onClick }: Props) => {
       }] p-3 rounded-xl flex flex-col cursor-pointer`}
     >
       <h2 className="text-base font-bold text-black text-center leading-tight break-words">
-        Лабораторная работа №1
+        {cardData.title}
       </h2>
 
       <div className="mt-auto text-center">
-        <p className="text-sm text-gray-600">МТУСИ</p>
-        <p className="text-sm text-gray-600">Физика</p>
-        <p className="text-sm text-gray-600">Лабораторная работа</p>
+        <p className="text-sm text-gray-600">{cardData.university}</p>
+        <p className="text-sm text-gray-600">{cardData.subject}</p>
+        <p className="text-sm text-gray-600">{cardData.type}</p>
       </div>
     </div>
   );

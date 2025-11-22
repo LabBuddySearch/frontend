@@ -22,9 +22,12 @@ const MyCardsLayout: FC = () => {
               ? "Режим создания"
               : url.includes("edit")
               ? "Режим редактирования"
-              : ""}
+              : "Мои карточки"}
           </h1>
-          <Button onClick={() => navigate("/")}>На главную</Button>
+          <div className="flex gap-4">
+            <Button onClick={() => navigate("/my-cards/create")}>Создать</Button>
+            <Button onClick={() => navigate("/")}>На главную</Button>
+          </div>
         </header>
         <Outlet />
       </main>
