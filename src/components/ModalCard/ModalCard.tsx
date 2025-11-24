@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { CardData } from "@/types/card";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 interface Props {
   onClose: () => void;
@@ -20,6 +21,9 @@ export const ModalCard: FC<Props> = ({
     onClose();
   };
 
+  const borderColor = useLocalStorage(`card_color_${cardData.id}`, "#FF684D");
+  const rawShadow = useLocalStorage(`card_shadow_${cardData.id}`, "0_0_20px_rgba(255,104,77,0.7)");
+
   const handleLikeAction = () => {
     if (isFromMiniList && onUnlike) {
       onUnlike();
@@ -29,8 +33,34 @@ export const ModalCard: FC<Props> = ({
     onClose();
   };
 
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch (error) {
+      console.error('Ошибка форматирования даты:', error);
+      return dateString; 
+    }
+  };
+
+  const files = cardData.files || [];
+
+  const shadowStyle = rawShadow 
+    ? { boxShadow: rawShadow.replace(/_/g, " ") }
+    : { boxShadow: "0 0 20px rgba(255,104,77,0.7)" };
+
   return (
-    <div className="fixed bottom-11 right-6 h-[600px] w-[calc(100vw-424px)] bg-[#FFFFF5] border border-[#FF684D] rounded-3xl overflow-hidden p-4 shadow-[0_0_20px_rgba(255,104,77,0.7)]">
+    <div 
+      className="fixed bottom-11 right-6 h-[600px] w-[calc(100vw-424px)] bg-[#FFFFF5] border rounded-3xl overflow-hidden p-4"
+      style={{
+        borderColor: borderColor || "#FF684D",
+        ...shadowStyle
+      }}
+    >
       <button
         onClick={handleClose}
         className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-[#FFFFF5] border border-[#FF684D] rounded-full hover:bg-[#FFF0ED] transition-colors duration-200 z-10"
@@ -77,9 +107,9 @@ export const ModalCard: FC<Props> = ({
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Файлы</h3>
               <div className="bg-gray-100 rounded-lg p-3">
-                {cardData.files.length > 0 ? (
+                {files.length > 0 ? (
                   <ul className="text-sm text-gray-600">
-                    {cardData.files.map((file, index) => (
+                    {files.map((file, index) => (
                       <li key={index}>{file}</li>
                     ))}
                   </ul>
@@ -92,7 +122,9 @@ export const ModalCard: FC<Props> = ({
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Способы связи</h3>
               <div className="bg-gray-100 rounded-lg p-3">
-                <p className="text-sm text-gray-600">{cardData.contact}</p>
+                <p className="text-sm text-gray-600 text-center">
+                  {cardData.contact ? cardData.contact : 'Нет контактов для связи'}
+                </p>
               </div>
             </div>
 
@@ -100,12 +132,17 @@ export const ModalCard: FC<Props> = ({
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">Автор</h3>
                 <div className="bg-gray-100 rounded-lg p-2">
-                  <p className="text-sm text-gray-600 text-start">{cardData.author}</p>
+                  {/* Автор берется из cardData.authorName */}
+                  <p className="text-sm text-gray-600 text-start">
+                    {cardData.authorName || "Неизвестный автор"}
+                  </p>
                 </div>
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">Опубликовано</h3>
-                <p className="text-base text-gray-900 font-light">{cardData.date}</p>
+                <p className="text-base text-gray-900 font-light">
+                  {formatDate(cardData.createdAt)}
+                </p>
               </div>
             </div>
 

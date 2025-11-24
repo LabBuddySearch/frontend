@@ -79,6 +79,7 @@ const AuthPage: FC = () => {
 
 
       localStorage.setItem('authorId', userData.id);
+      localStorage.setItem('userName', userData.name);
       localStorage.setItem('user', JSON.stringify(userData));
       navigate("/");
     } catch (err) {

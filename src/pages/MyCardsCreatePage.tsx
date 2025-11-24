@@ -2,6 +2,7 @@ import { FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CardForm } from "@/components/CardForm";
 import { cardService } from "@/services/cardService";
+import { setLocalStorageWithEvent } from "@/hooks/useLocalStorage";
 
 const MyCardsCreatePage: FC = () => {
   const navigate = useNavigate();
@@ -13,17 +14,19 @@ const MyCardsCreatePage: FC = () => {
     setError("");
 
     try {
-      console.log('=== ДАННЫЕ ИЗ LOCALSTORAGE ===');
-      const authorId = localStorage.getItem('authorId');
 
-      if (!authorId) {
-        throw new Error('Не авторизован — войдите заново');
+      const authorId = localStorage.getItem("authorId");
+      const authorName = localStorage.getItem("userName");
+
+      if (!authorId || !authorName) {
+        throw new Error("Не авторизован — войдите заново");
       }
 
       const courseNumber = parseInt(data.course) || 1;
 
       const cardData = {
         authorId: authorId,
+        authorName: authorName,
         type: data.workType,
         subject: data.subject,
         title: data.title,
@@ -33,15 +36,22 @@ const MyCardsCreatePage: FC = () => {
         city: data.city
       };
 
-      console.log('Отправка данных карточки:', cardData);
+      console.log("Отправка данных карточки:", cardData);
 
       const response = await cardService.createCard(cardData);
-      console.log('Карточка создана:', response);
       
-      navigate("/my-cards");
+      setLocalStorageWithEvent(`card_color_${response.id}`, data.color);
+      setLocalStorageWithEvent(`card_shadow_${response.id}`, data.shadow);
+      
+      navigate("/my-cards", { state: { refreshCards: true } });
+
     } catch (err) {
-      console.error('Ошибка создания карточки:', err);
-      setError(err instanceof Error ? err.message : "Произошла ошибка при создании карточки");
+      console.error("Ошибка создания карточки:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Произошла ошибка при создании карточки"
+      );
     } finally {
       setLoading(false);
     }

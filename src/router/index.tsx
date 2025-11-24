@@ -9,6 +9,7 @@ import MyCardsLayout from "@/pages/MyCardsLayout";
 import MyCardsPage from "@/pages/MyCardsPage";
 import NotFoundPage from "@/pages/NotFound";
 import SettingsPage from "@/pages/SettingsPage";
+import { PrivateRoute } from "@/components/PrivateRoute";
 
 import { PATHS } from "./paths";
 
@@ -18,7 +19,11 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HomePage />,
+        element: (
+          <PrivateRoute>
+            <HomePage />
+          </PrivateRoute>
+        ),
       },
       {
         path: PATHS.LOGIN,
@@ -30,11 +35,19 @@ export const router = createBrowserRouter([
       },
       {
         path: PATHS.SETTINGS,
-        element: <SettingsPage />,
+        element: (
+          <PrivateRoute>
+            <SettingsPage />
+          </PrivateRoute>
+        ),
       },
       {
         path: PATHS.MY_CARDS,
-        element: <MyCardsLayout />,
+        element: (
+          <PrivateRoute>
+            <MyCardsLayout />
+          </PrivateRoute>
+        ),
         children: [
           {
             index: true,
@@ -52,6 +65,10 @@ export const router = createBrowserRouter([
       },
       {
         path: PATHS.NOT_FOUND,
+        element: <NotFoundPage />,
+      },
+      {
+        path: "*",
         element: <NotFoundPage />,
       },
     ],

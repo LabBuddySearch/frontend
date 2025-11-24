@@ -40,4 +40,14 @@ export const authService = {
 
     return response.json();
   },
+
+  async logout() {
+    localStorage.removeItem("user");
+    localStorage.removeItem("authorId");
+    localStorage.removeItem("userName");
+  },
+  
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem("authorId");
+  },
 };

@@ -1,4 +1,5 @@
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 interface CardFormData {
   workType: string;
@@ -16,6 +17,7 @@ interface CardFormData {
 interface CardFormProps {
   initialData?: Partial<CardFormData>;
   isEditing?: boolean;
+  cardId?: string | undefined;
   onSubmit: (data: CardFormData) => void;
   onCancel: () => void;
   loading?: boolean;
@@ -52,25 +54,29 @@ const cities = [
 const courses = ["1 курс", "2 курс", "3 курс", "4 курс", "5 курс", "6 курс"];
 
 const colorOptions = [
-  { border: "#FFB4A7", shadow: "rgba(255, 180, 167, 0.3)" },
-  { border: "#FFD166", shadow: "rgba(255, 209, 102, 0.3)" },
-  { border: "#06D6A0", shadow: "rgba(6, 214, 160, 0.3)" },
-  { border: "#118AB2", shadow: "rgba(17, 138, 178, 0.3)" },
-  { border: "#073B4C", shadow: "rgba(7, 59, 76, 0.3)" },
-  { border: "#EF476F", shadow: "rgba(239, 71, 111, 0.3)" },
-  { border: "#7209B7", shadow: "rgba(114, 9, 183, 0.3)" },
-  { border: "#F72585", shadow: "rgba(247, 37, 133, 0.3)" },
-  { border: "#4CC9F0", shadow: "rgba(76, 201, 240, 0.3)" },
-  { border: "#4361EE", shadow: "rgba(67, 97, 238, 0.3)" }
+  { border: "#FFB4A7", shadow: "0_0_20px_rgba(255,180,167,0.3)" },
+  { border: "#FFD166", shadow: "0_0_25px_rgba(255,209,102,0.35)" },
+  { border: "#06D6A0", shadow: "0_0_25px_rgba(6,214,160,0.4)" },
+  { border: "#118AB2", shadow: "0_0_25px_rgba(17,138,178,0.4)" },
+  { border: "#073B4C", shadow: "0_0_30px_rgba(7,59,76,0.5)" },
+  { border: "#EF476F", shadow: "0_0_25px_rgba(239,71,111,0.4)" },
+  { border: "#7209B7", shadow: "0_0_25px_rgba(114,9,183,0.4)" },
+  { border: "#F72585", shadow: "0_0_25px_rgba(247,37,133,0.4)" },
+  { border: "#4CC9F0", shadow: "0_0_25px_rgba(76,201,240,0.4)" },
+  { border: "#4361EE", shadow: "0_0_25px_rgba(67,97,238,0.4)" }
 ];
 
 export const CardForm: FC<CardFormProps> = ({
   initialData = {},
   isEditing = false,
+  cardId,
   onSubmit,
   onCancel,
   loading = false
 }) => {
+  const storedColor = useLocalStorage(cardId ? `card_color_${cardId}` : "", "#FFB4A7");
+  const storedShadow = useLocalStorage(cardId ? `card_shadow_${cardId}` : "", "0_0_20px_rgba(255,180,167,0.3)");
+
   const [formData, setFormData] = useState<CardFormData>({
     workType: "",
     subject: "",
@@ -81,9 +87,19 @@ export const CardForm: FC<CardFormProps> = ({
     course: "",
     city: "",
     color: "#FFB4A7",
-    shadow: "rgba(255, 180, 167, 0.3)",
+    shadow: "0_0_20px_rgba(255,180,167,0.3)",
     ...initialData
   });
+
+  useEffect(() => {
+    if (isEditing && cardId) {
+      setFormData(prev => ({
+        ...prev,
+        color: storedColor || "#FFB4A7",
+        shadow: storedShadow || "0_0_20px_rgba(255,180,167,0.3)"
+      }));
+    }
+  }, [isEditing, cardId, storedColor, storedShadow]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -237,7 +253,7 @@ export const CardForm: FC<CardFormProps> = ({
             className="h-96 w-72 bg-[#FFFFF5] shadow-md border p-4 rounded-xl flex flex-col mx-auto mb-8 transition-all duration-200"
             style={{ 
               borderColor: formData.color,
-              boxShadow: `0 4px 20px ${formData.shadow}`
+              boxShadow: formData.shadow.replace(/_/g, " ")
             }}
           >
             <h2 className="text-xl font-bold text-black text-center">
@@ -252,11 +268,14 @@ export const CardForm: FC<CardFormProps> = ({
             </div>
             <div className="mt-auto text-right">
               <p className="text-base text-gray-900 font-light">{formData.university || "Учебное заведение"}</p>
-              <p className="text-base text-gray-900 font-light">{formData.course || "Курс"}</p>
+              <p className="text-base text-gray-900 font-light">{formData.course} курс</p>
               <p className="text-base text-gray-900 font-light">{new Date().toLocaleDateString()}</p>
             </div>
           </div>
           <div className="flex flex-col items-center gap-2">
+            <label className="block text-lg font-semibold text-gray-900 mb-2">
+              Выберите цвет карточки
+            </label>
             <div className="grid grid-cols-5 gap-6">
                 {colorOptions.map((colorOption) => (
                 <button
@@ -285,9 +304,9 @@ export const CardForm: FC<CardFormProps> = ({
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-[#FF684D] text-white rounded-lg hover:bg-[#E55A40] transition-colors"
+              disabled={loading}
+              className="px-6 py-2 bg-[#FF684D] text-white rounded-lg hover:bg-[#E55A40] transition-colors disabled:opacity-50"
             >
-              {isEditing ? "Сохранить" : "Добавить"}
               {loading ? "Сохранение..." : (isEditing ? "Сохранить" : "Добавить")}
             </button>
           </div>

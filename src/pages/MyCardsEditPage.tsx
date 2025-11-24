@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { CardForm } from "@/components/CardForm";
 import { cardService } from "@/services/cardService";
 import { CardData } from "@/types/card";
+import { setLocalStorageWithEvent } from "@/hooks/useLocalStorage";
 
 const MyCardsEditPage: FC = () => {
   const navigate = useNavigate();
@@ -52,7 +53,11 @@ const MyCardsEditPage: FC = () => {
         };
 
         await cardService.updateCard(cardId, backendData);
-        navigate("/my-cards");
+        
+        setLocalStorageWithEvent(`card_color_${cardId}`, data.color);
+        setLocalStorageWithEvent(`card_shadow_${cardId}`, data.shadow);
+        
+        navigate("/my-cards", { state: { refreshCards: true } });
       }
     } catch (err) {
       console.error('Ошибка обновления карточки:', err);
@@ -87,18 +92,20 @@ const MyCardsEditPage: FC = () => {
   }
 
   const initialData = {
+    cardId: cardData.id,
     title: cardData.title,
     subject: cardData.subject,
     workType: cardData.type,
     description: cardData.description,
-    university: cardData.university,
+    university: cardData.study,
     course: cardData.course,
-    city: cardData.сity || ""
+    city: cardData.city
   };
 
   return (
     <CardForm
       initialData={initialData}
+      cardId={cardId}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       isEditing={true}

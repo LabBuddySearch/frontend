@@ -1,8 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { authService } from "@/services/authService";
 import { PATHS } from "@/router/paths";
-
 import { MenuElement } from "./MenuElement";
 
 export interface MenuElementProps {
@@ -31,7 +30,9 @@ export const MenuDropdown = () => {
   const menuElements: Array<MenuElementProps> = [
     { label: "Мои карточки", onClick: () => navigate(PATHS.MY_CARDS) },
     { label: "Настройки", onClick: () => navigate(PATHS.SETTINGS) },
-    { label: "Выход", onClick: () => console.log("todo logout") },
+    { label: "Выход", onClick: () => { authService.logout(); navigate(PATHS.LOGIN);
+  } 
+},
   ];
 
   return (

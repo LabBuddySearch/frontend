@@ -22,6 +22,7 @@ const LoginPage: FC = () => {
     try {
       const response = await authService.login(formData);
       localStorage.setItem('authorId', response.id);
+      localStorage.setItem('userName', response.name);
       
       navigate("/");
     } catch (err) {

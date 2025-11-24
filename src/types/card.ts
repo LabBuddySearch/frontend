@@ -4,15 +4,14 @@ export interface CardData {
   subject: string;
   type: string;
   description: string;
-  university: string;
-  сity: string;
+  study: string;     
+  city: string;        
   course: string;
-  date: string;
-  author: string;
-  contact: string;
-  files: string[];
-  color?: string;
-  shadow?: string;
+  createdAt: string;   
+  authorId: string;     
+  authorName: string;
+  contact?: string;
+  files?: string[];
 }
 
 export interface CreateCardRequest {
