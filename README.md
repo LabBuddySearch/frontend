@@ -37,3 +37,5 @@ Frontend
 
 6. Результат
 Реализованы страницы: Login, Register, Profile, Error404, Main
+
+7. workflows
