@@ -1,9 +1,11 @@
-import { FC } from "react";
-import { generatePath, useNavigate, useParams } from "react-router-dom";
+import { FC, useState, useEffect } from "react";
+import { generatePath, useNavigate, useParams, useLocation } from "react-router-dom";
 
 import { CardMini } from "@/components/CardMini";
 import { StarIcon } from "@/components/icons";
 import { PATHS } from "@/router/paths";
+import { cardService } from "@/services/cardService";
+import { CardData } from "@/types/card";
 
 interface Props {
   isMyCardsPage?: boolean;
@@ -18,6 +20,34 @@ export const MinicardsList: FC<Props> = ({
 }: Props) => {
   const navigate = useNavigate();
   const { cardId } = useParams();
+  const location = useLocation();
+  const [cards, setCards] = useState<CardData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadUserCards = async () => {
+    try {
+      setLoading(true);
+      const userCards = await cardService.getUserCards();
+      setCards(userCards);
+    } catch (err) {
+      console.error('Ошибка загрузки пользовательских карточек:', err);
+      setError(err instanceof Error ? err.message : "Ошибка загрузки карточек");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadUserCards();
+  }, []);
+
+  useEffect(() => {
+    if (location.state?.refreshCards) {
+      loadUserCards();
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state?.refreshCards]);
 
   const onCardClick = (cardId: string) => {
     isMyCardsPage
@@ -25,7 +55,21 @@ export const MinicardsList: FC<Props> = ({
       : setModalCardId && setModalCardId(cardId);
   };
 
-  const arrOfMinicards = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-32">
+        <div className="text-lg">Загрузка...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-32">
+        <div className="text-red-600 text-center">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -37,14 +81,19 @@ export const MinicardsList: FC<Props> = ({
       </div>
       <div className="border-t border-gray-200 mx-4" />
       <div className="flex flex-wrap justify-center bg-[#FFFFF5] py-4 pl-[6px] gap-8 max-h-[calc(100vh-124.8px)] overflow-y-auto [scrollbar-gutter:stable] custom-scrollbar">
-        {arrOfMinicards.map((id) => (
-          <CardMini
-            key={id}
-            id={id}
-            isSelected={id === cardId || id === modalCardId}
-            onClick={() => onCardClick(id)}
-          />
-        ))}
+        {cards.map((card) => (
+        <CardMini
+          key={card.id}
+          cardData={card}
+          isSelected={card.id === cardId || card.id === modalCardId}
+          onClick={() => onCardClick(card.id)}
+        />
+      ))}
+        {cards.length === 0 && (
+          <div className="text-gray-500 text-center py-8">
+            {isMyCardsPage ? "У вас пока нет карточек" : "У вас пока нет лайков"}
+          </div>
+        )}
       </div>
     </div>
   );
