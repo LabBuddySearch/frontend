@@ -1,13 +1,13 @@
-import { CreateCardRequest, CardResponse, CardData } from '@/types/card';
+import { CreateCardRequest, CardResponse, CardData } from "@/types/card";
 
-const API_BASE_URL = 'http://localhost:8080/api/cards';
+const API_BASE_URL = "http://localhost:8080/api/cards";
 
 export const cardService = {
   async createCard(cardData: CreateCardRequest): Promise<CardResponse> {
-    const authorId = localStorage.getItem('authorId');
+    const authorId = localStorage.getItem("authorId");
 
     if (!authorId) {
-      throw new Error('Не авторизован — войдите заново');
+      throw new Error("Не авторизован — войдите заново");
     }
 
     const payload = {
@@ -16,16 +16,16 @@ export const cardService = {
     };
 
     const response = await fetch(`${API_BASE_URL}/user`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Ошибка от бэкенда:', response.status, errorText);
+      console.error("Ошибка от бэкенда:", response.status, errorText);
       throw new Error(`Ошибка создания карточки: ${response.status}`);
     }
 
@@ -34,9 +34,9 @@ export const cardService = {
 
   async getAllCards(): Promise<CardData[]> {
     const response = await fetch(`${API_BASE_URL}`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -48,32 +48,33 @@ export const cardService = {
   },
 
   async getUserCards(): Promise<CardData[]> {
-    const authorId = localStorage.getItem('authorId');
-    
+    const authorId = localStorage.getItem("authorId");
+
     if (!authorId) {
-      throw new Error('Пользователь не авторизован');
+      throw new Error("Пользователь не авторизован");
     }
 
-
     const response = await fetch(`${API_BASE_URL}/user/${authorId}`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
     if (!response.ok) {
-      throw new Error(`Ошибка загрузки пользовательских карточек: ${response.status}`);
+      throw new Error(
+        `Ошибка загрузки пользовательских карточек: ${response.status}`
+      );
     }
 
     return response.json();
   },
 
-   async updateCard(cardId: string, cardData: any): Promise<CardData> {
-    const authorId = localStorage.getItem('authorId');
-    
+  async updateCard(cardId: string, cardData: any): Promise<CardData> {
+    const authorId = localStorage.getItem("authorId");
+
     if (!authorId) {
-      throw new Error('Пользователь не авторизован');
+      throw new Error("Пользователь не авторизован");
     }
 
     const backendData = {
@@ -84,22 +85,22 @@ export const cardService = {
       description: cardData.description,
       study: cardData.university,
       city: cardData.city,
-      course: parseInt(cardData.course) || 1
+      course: parseInt(cardData.course) || 1,
     };
 
-    console.log('Отправка данных для обновления:', backendData);
+    console.log("Отправка данных для обновления:", backendData);
 
     const response = await fetch(`${API_BASE_URL}/user`, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(backendData),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Ошибка обновления:', response.status, errorText);
+      console.error("Ошибка обновления:", response.status, errorText);
       throw new Error(`Ошибка обновления карточки: ${response.status}`);
     }
 

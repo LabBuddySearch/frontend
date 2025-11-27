@@ -30,26 +30,26 @@ const workTypes = [
   "Курсовая работа",
   "Зачет",
   "Экзамен",
-  "Диплом"
+  "Диплом",
 ];
 
 const cities = [
-    "Москва",
-    "Санкт-Петербург",
-    "Новосибирск",
-    "Екатеринбург",
-    "Казань",
-    "Нижний Новгород",
-    "Челябинск",
-    "Самара",
-    "Омск",
-    "Ростов-на-Дону",
-    "Уфа",
-    "Красноярск",
-    "Воронеж",
-    "Пермь",
-    "Волгоград"
-  ];
+  "Москва",
+  "Санкт-Петербург",
+  "Новосибирск",
+  "Екатеринбург",
+  "Казань",
+  "Нижний Новгород",
+  "Челябинск",
+  "Самара",
+  "Омск",
+  "Ростов-на-Дону",
+  "Уфа",
+  "Красноярск",
+  "Воронеж",
+  "Пермь",
+  "Волгоград",
+];
 
 const courses = ["1 курс", "2 курс", "3 курс", "4 курс", "5 курс", "6 курс"];
 
@@ -63,7 +63,7 @@ const colorOptions = [
   { border: "#7209B7", shadow: "0_0_25px_rgba(114,9,183,0.4)" },
   { border: "#F72585", shadow: "0_0_25px_rgba(247,37,133,0.4)" },
   { border: "#4CC9F0", shadow: "0_0_25px_rgba(76,201,240,0.4)" },
-  { border: "#4361EE", shadow: "0_0_25px_rgba(67,97,238,0.4)" }
+  { border: "#4361EE", shadow: "0_0_25px_rgba(67,97,238,0.4)" },
 ];
 
 export const CardForm: FC<CardFormProps> = ({
@@ -72,10 +72,16 @@ export const CardForm: FC<CardFormProps> = ({
   cardId,
   onSubmit,
   onCancel,
-  loading = false
+  loading = false,
 }) => {
-  const storedColor = useLocalStorage(cardId ? `card_color_${cardId}` : "", "#FFB4A7");
-  const storedShadow = useLocalStorage(cardId ? `card_shadow_${cardId}` : "", "0_0_20px_rgba(255,180,167,0.3)");
+  const storedColor = useLocalStorage(
+    cardId ? `card_color_${cardId}` : "",
+    "#FFB4A7"
+  );
+  const storedShadow = useLocalStorage(
+    cardId ? `card_shadow_${cardId}` : "",
+    "0_0_20px_rgba(255,180,167,0.3)"
+  );
 
   const [formData, setFormData] = useState<CardFormData>({
     workType: "",
@@ -88,15 +94,15 @@ export const CardForm: FC<CardFormProps> = ({
     city: "",
     color: "#FFB4A7",
     shadow: "0_0_20px_rgba(255,180,167,0.3)",
-    ...initialData
+    ...initialData,
   });
 
   useEffect(() => {
     if (isEditing && cardId) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         color: storedColor || "#FFB4A7",
-        shadow: storedShadow || "0_0_20px_rgba(255,180,167,0.3)"
+        shadow: storedShadow || "0_0_20px_rgba(255,180,167,0.3)",
       }));
     }
   }, [isEditing, cardId, storedColor, storedShadow]);
@@ -108,15 +114,15 @@ export const CardForm: FC<CardFormProps> = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        files: Array.from(e.target.files!)
+        files: Array.from(e.target.files!),
       }));
     }
   };
 
   const handleColorChange = (color: string, shadow: string) => {
-    setFormData(prev => ({ ...prev, color, shadow }));
+    setFormData((prev) => ({ ...prev, color, shadow }));
   };
 
   return (
@@ -129,12 +135,16 @@ export const CardForm: FC<CardFormProps> = ({
             </label>
             <select
               value={formData.workType}
-              onChange={(e) => setFormData(prev => ({ ...prev, workType: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, workType: e.target.value }))
+              }
               className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-[#FF684D] focus:outline-none"
             >
               <option value="">Выберите тип работы</option>
-              {workTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
+              {workTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
               ))}
             </select>
           </div>
@@ -146,7 +156,9 @@ export const CardForm: FC<CardFormProps> = ({
             <input
               type="text"
               value={formData.subject}
-              onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, subject: e.target.value }))
+              }
               className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
               placeholder="Введите предмет"
             />
@@ -159,7 +171,9 @@ export const CardForm: FC<CardFormProps> = ({
             <input
               type="text"
               value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, title: e.target.value }))
+              }
               className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
               placeholder="Введите название работы"
             />
@@ -171,7 +185,12 @@ export const CardForm: FC<CardFormProps> = ({
             </label>
             <textarea
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               rows={6}
               className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none resize-none custom-scrollbar"
               placeholder="Введите описание работы"
@@ -190,14 +209,23 @@ export const CardForm: FC<CardFormProps> = ({
                 className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none opacity-0 absolute z-10 cursor-pointer"
               />
               <div className="w-full p-3 border border-gray-300 rounded-lg bg-white flex items-center gap-2">
-                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                <svg
+                  className="w-5 h-5 text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                  />
                 </svg>
                 <span className="text-gray-500">
-                  {formData.files.length > 0 
+                  {formData.files.length > 0
                     ? `Выбрано файлов: ${formData.files.length}`
-                    : "Прикрепите файлы"
-                  }
+                    : "Прикрепите файлы"}
                 </span>
               </div>
             </div>
@@ -210,7 +238,9 @@ export const CardForm: FC<CardFormProps> = ({
             <input
               type="text"
               value={formData.university}
-              onChange={(e) => setFormData(prev => ({ ...prev, university: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, university: e.target.value }))
+              }
               className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
               placeholder="Введите название учебного заведения"
             />
@@ -221,12 +251,16 @@ export const CardForm: FC<CardFormProps> = ({
             </label>
             <select
               value={formData.city}
-              onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, city: e.target.value }))
+              }
               className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-[#FF684D] focus:outline-none"
             >
               <option value="">Выберите город</option>
-              {cities.map(city => (
-                <option key={city} value={city}>{city}</option>
+              {cities.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
               ))}
             </select>
           </div>
@@ -237,39 +271,54 @@ export const CardForm: FC<CardFormProps> = ({
             </label>
             <select
               value={formData.course}
-              onChange={(e) => setFormData(prev => ({ ...prev, course: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, course: e.target.value }))
+              }
               className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-[#FF684D] focus:outline-none"
             >
               <option value="">Выберите курс</option>
-              {courses.map(course => (
-                <option key={course} value={course}>{course}</option>
+              {courses.map((course) => (
+                <option key={course} value={course.split(" ")[0]}>
+                  {course}
+                </option>
               ))}
             </select>
           </div>
         </div>
 
         <div className="flex flex-col">
-          <div 
+          <div
             className="h-96 w-72 bg-[#FFFFF5] shadow-md border p-4 rounded-xl flex flex-col mx-auto mb-8 transition-all duration-200"
-            style={{ 
+            style={{
               borderColor: formData.color,
-              boxShadow: formData.shadow.replace(/_/g, " ")
+              boxShadow: formData.shadow.replace(/_/g, " "),
             }}
           >
             <h2 className="text-xl font-bold text-black text-center">
               {formData.title || "Название работы"}
             </h2>
-            <p className="text-lg text-gray-700 mt-2 text-center">{formData.subject || "Предмет"}</p>
-            <p className="text-lg text-gray-700 text-center">{formData.workType || "Тип работы"}</p>
+            <p className="text-lg text-gray-700 mt-2 text-center">
+              {formData.subject || "Предмет"}
+            </p>
+            <p className="text-lg text-gray-700 text-center">
+              {formData.workType || "Тип работы"}
+            </p>
             <div className="max-h-[150px] mt-4 rounded-md flex-grow overflow-y-auto custom-scrollbar">
               <p className="text-base font-light px-2 mt-2 text-gray-700">
-                {formData.description || "Описание работы будет отображаться здесь"}
+                {formData.description ||
+                  "Описание работы будет отображаться здесь"}
               </p>
             </div>
             <div className="mt-auto text-right">
-              <p className="text-base text-gray-900 font-light">{formData.university || "Учебное заведение"}</p>
-              <p className="text-base text-gray-900 font-light">{formData.course} курс</p>
-              <p className="text-base text-gray-900 font-light">{new Date().toLocaleDateString()}</p>
+              <p className="text-base text-gray-900 font-light">
+                {formData.university || "Учебное заведение"}
+              </p>
+              <p className="text-base text-gray-900 font-light">
+                {formData.course} курс
+              </p>
+              <p className="text-base text-gray-900 font-light">
+                {new Date().toLocaleDateString()}
+              </p>
             </div>
           </div>
           <div className="flex flex-col items-center gap-2">
@@ -277,20 +326,22 @@ export const CardForm: FC<CardFormProps> = ({
               Выберите цвет карточки
             </label>
             <div className="grid grid-cols-5 gap-6">
-                {colorOptions.map((colorOption) => (
+              {colorOptions.map((colorOption) => (
                 <button
-                    key={colorOption.border}
-                    type="button"
-                    onClick={() => handleColorChange(colorOption.border, colorOption.shadow)}
-                    className={`w-8 h-10 rounded-md border-2 transition-all ${
-                    formData.color === colorOption.border 
-                        ? 'border-gray-800 scale-110' 
-                        : 'border-gray-300 hover:scale-105'
-                    }`}
-                    style={{ backgroundColor: colorOption.border }}
-                    title={`Цвет: ${colorOption.border}`}
+                  key={colorOption.border}
+                  type="button"
+                  onClick={() =>
+                    handleColorChange(colorOption.border, colorOption.shadow)
+                  }
+                  className={`w-8 h-10 rounded-md border-2 transition-all ${
+                    formData.color === colorOption.border
+                      ? "border-gray-800 scale-110"
+                      : "border-gray-300 hover:scale-105"
+                  }`}
+                  style={{ backgroundColor: colorOption.border }}
+                  title={`Цвет: ${colorOption.border}`}
                 />
-                ))}
+              ))}
             </div>
           </div>
 
@@ -307,7 +358,7 @@ export const CardForm: FC<CardFormProps> = ({
               disabled={loading}
               className="px-6 py-2 bg-[#FF684D] text-white rounded-lg hover:bg-[#E55A40] transition-colors disabled:opacity-50"
             >
-              {loading ? "Сохранение..." : (isEditing ? "Сохранить" : "Добавить")}
+              {loading ? "Сохранение..." : isEditing ? "Сохранить" : "Добавить"}
             </button>
           </div>
         </div>
