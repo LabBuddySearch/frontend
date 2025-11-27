@@ -4,11 +4,11 @@ export interface CardData {
   subject: string;
   type: string;
   description: string;
-  study: string;     
-  city: string;        
+  study: string;
+  city: string;
   course: string;
-  createdAt: string;   
-  authorId: string;     
+  createdAt: string;
+  authorId: string;
   authorName: string;
   contact?: string;
   files?: string[];
@@ -36,4 +36,9 @@ export interface CardResponse {
   study: string;
   city: string;
   createdAt: string;
+}
+
+export interface Like {
+  userId: string;
+  cardId: string;
 }

@@ -6,6 +6,7 @@ import { MinicardsList } from "@/components/MinicardsList";
 import { ModalCard } from "@/components/ModalCard";
 import { cardService } from "@/services/cardService";
 import { CardData } from "@/types/card";
+import { likeService } from "@/services/likeService";
 
 const HomePage: FC = () => {
   const [modalCardId, setModalCardId] = useState<string | null>(null);
@@ -22,26 +23,30 @@ const HomePage: FC = () => {
       const cards = await cardService.getAllCards();
       setAllCards(cards);
     } catch (error) {
-      console.error('Ошибка загрузки карточек:', error);
+      console.error("Ошибка загрузки карточек:", error);
     }
   };
 
   useEffect(() => {
     if (modalCardId) {
-      const foundCard = allCards.find(card => card.id === modalCardId);
+      const foundCard = allCards.find((card) => card.id === modalCardId);
       setCurrentCard(foundCard || null);
     }
   }, [modalCardId, allCards]);
 
   const handleLike = () => {
     console.log("Добавить в лайкнутые:", modalCardId);
-    // Вызов API для добавления в лайки
+
+    modalCardId && likeService.likeCard(modalCardId);
+
     setModalCardId(null);
   };
 
   const handleUnlike = () => {
     console.log("Удалить из лайкнутых:", modalCardId);
-    // Вызов API для удаления из лайков
+
+    modalCardId && likeService.dislikeCard(modalCardId);
+
     setModalCardId(null);
   };
 
@@ -64,8 +69,8 @@ const HomePage: FC = () => {
       </aside>
       <main className="flex-1">
         <header className="h-[76px]">Фильтры</header>
-        <CardsList 
-          modalCardId={modalCardId} 
+        <CardsList
+          modalCardId={modalCardId}
           setModalCardId={(id) => {
             setModalCardId(id);
             setIsFromMiniList(false);
@@ -74,8 +79,8 @@ const HomePage: FC = () => {
       </main>
 
       {modalCardId && currentCard && (
-        <ModalCard 
-          cardData={currentCard} 
+        <ModalCard
+          cardData={currentCard}
           onClose={handleCloseModal}
           isFromMiniList={isFromMiniList}
           onLike={handleLike}

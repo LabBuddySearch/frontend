@@ -10,6 +10,8 @@ export interface MenuElementProps {
 }
 
 export const MenuDropdown = () => {
+  const authorName = localStorage.getItem("userName");
+
   const [menuIsDropped, setMenuIsDropped] = useState<boolean>(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -30,9 +32,13 @@ export const MenuDropdown = () => {
   const menuElements: Array<MenuElementProps> = [
     { label: "Мои карточки", onClick: () => navigate(PATHS.MY_CARDS) },
     { label: "Настройки", onClick: () => navigate(PATHS.SETTINGS) },
-    { label: "Выход", onClick: () => { authService.logout(); navigate(PATHS.LOGIN);
-  } 
-},
+    {
+      label: "Выход",
+      onClick: () => {
+        authService.logout();
+        navigate(PATHS.LOGIN);
+      },
+    },
   ];
 
   return (
@@ -43,7 +49,7 @@ export const MenuDropdown = () => {
     >
       <div className="bg-gray-100 hover:opacity-75 px-12 py-6 cursor-pointer">
         <p className="max-h-[28px] text-xl font-medium text-center select-none truncate">
-          Логин пользователя
+          {authorName || "Логин пользователя"}
         </p>
       </div>
 
