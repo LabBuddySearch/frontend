@@ -106,4 +106,25 @@ export const cardService = {
 
     return response.json();
   },
+
+  async deleteCard(cardId: string): Promise<void> {
+    const authorId = localStorage.getItem("authorId");
+
+    if (!authorId) {
+      throw new Error("Пользователь не авторизован");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/user/${cardId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Ошибка удаления:", response.status, errorText);
+      throw new Error(`Ошибка удаления карточки: ${response.status}`);
+    }
+  },
 };

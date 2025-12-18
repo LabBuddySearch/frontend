@@ -11,6 +11,7 @@ const MyCardsEditPage: FC = () => {
   const [cardData, setCardData] = useState<CardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (cardId) {
@@ -91,6 +92,27 @@ const MyCardsEditPage: FC = () => {
     );
   }
 
+  const handleDelete = async () => {
+    if (!cardId) return;
+    
+    const confirmed = window.confirm("Вы уверены, что хотите удалить эту карточку?");
+    if (!confirmed) return;
+    
+    try {
+      setDeleting(true);
+      await cardService.deleteCard(cardId);
+      
+      localStorage.removeItem(`card_color_${cardId}`);
+      localStorage.removeItem(`card_shadow_${cardId}`);
+      
+      navigate("/my-cards", { state: { refreshCards: true } });
+    } catch (err) {
+      console.error('Ошибка удаления карточки:', err);
+      alert('Ошибка при удалении карточки');
+      setDeleting(false);
+    }
+  };
+
   const initialData = {
     cardId: cardData.id,
     title: cardData.title,
@@ -109,6 +131,8 @@ const MyCardsEditPage: FC = () => {
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       isEditing={true}
+      onDelete={handleDelete}
+      deleting={deleting}
     />
   );
 };

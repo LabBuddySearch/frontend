@@ -1,5 +1,7 @@
 import { FC, useState, useEffect } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { cities } from "@/hooks/cities";
+import { universities } from "@/hooks/universities";
 
 interface CardFormData {
   workType: string;
@@ -21,6 +23,8 @@ interface CardFormProps {
   onSubmit: (data: CardFormData) => void;
   onCancel: () => void;
   loading?: boolean;
+  onDelete?: () => void;
+  deleting?: boolean;
 }
 
 const workTypes = [
@@ -31,24 +35,6 @@ const workTypes = [
   "Зачет",
   "Экзамен",
   "Диплом",
-];
-
-const cities = [
-  "Москва",
-  "Санкт-Петербург",
-  "Новосибирск",
-  "Екатеринбург",
-  "Казань",
-  "Нижний Новгород",
-  "Челябинск",
-  "Самара",
-  "Омск",
-  "Ростов-на-Дону",
-  "Уфа",
-  "Красноярск",
-  "Воронеж",
-  "Пермь",
-  "Волгоград",
 ];
 
 const courses = ["1 курс", "2 курс", "3 курс", "4 курс", "5 курс", "6 курс"];
@@ -72,6 +58,8 @@ export const CardForm: FC<CardFormProps> = ({
   cardId,
   onSubmit,
   onCancel,
+  onDelete,
+  deleting = false,
   loading = false,
 }) => {
   const storedColor = useLocalStorage(
@@ -82,7 +70,8 @@ export const CardForm: FC<CardFormProps> = ({
     cardId ? `card_shadow_${cardId}` : "",
     "0_0_20px_rgba(255,180,167,0.3)"
   );
-
+  const [useCustomCity, setUseCustomCity] = useState(false);
+  const [useCustomUniversity, setUseCustomUniversity] = useState(false);
   const [formData, setFormData] = useState<CardFormData>({
     workType: "",
     subject: "",
@@ -106,6 +95,16 @@ export const CardForm: FC<CardFormProps> = ({
       }));
     }
   }, [isEditing, cardId, storedColor, storedShadow]);
+
+  useEffect(() => {
+    if (initialData.city && !cities.includes(initialData.city)) {
+      setUseCustomCity(true);
+    }
+    
+    if (initialData.university && !universities.includes(initialData.university)) {
+      setUseCustomUniversity(true);
+    }
+  }, [initialData.city, initialData.university]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -235,34 +234,89 @@ export const CardForm: FC<CardFormProps> = ({
             <label className="block text-lg font-semibold text-gray-900 mb-2">
               Вуз/колледж
             </label>
-            <input
-              type="text"
-              value={formData.university}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, university: e.target.value }))
-              }
-              className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
-              placeholder="Введите название учебного заведения"
-            />
+            <div className="flex items-center mb-2">
+              <input
+                type="checkbox"
+                id="customUniversity"
+                checked={useCustomUniversity}
+                onChange={(e) => setUseCustomUniversity(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="customUniversity" className="text-sm text-gray-600">
+                Указать другое учебное заведение
+              </label>
+            </div>
+            
+            {useCustomUniversity ? (
+              <input
+                type="text"
+                value={formData.university}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, university: e.target.value }))
+                }
+                className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
+                placeholder="Введите название учебного заведения"
+              />
+            ) : (
+              <select
+                value={formData.university}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, university: e.target.value }))
+                }
+                className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-[#FF684D] focus:outline-none"
+              >
+                <option value="">Выберите учебное заведение</option>
+                {universities.map((university) => (
+                  <option key={university} value={university}>
+                    {university}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           <div>
             <label className="block text-lg font-semibold text-gray-900 mb-2">
               Город
             </label>
-            <select
-              value={formData.city}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, city: e.target.value }))
-              }
-              className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-[#FF684D] focus:outline-none"
-            >
-              <option value="">Выберите город</option>
-              {cities.map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center mb-2">
+              <input
+                type="checkbox"
+                id="customCity"
+                checked={useCustomCity}
+                onChange={(e) => setUseCustomCity(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="customCity" className="text-sm text-gray-600">
+                Указать другой город
+              </label>
+            </div>
+            
+            {useCustomCity ? (
+              <input
+                type="text"
+                value={formData.city}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, city: e.target.value }))
+                }
+                className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
+                placeholder="Введите ваш город"
+              />
+            ) : (
+              <select
+                value={formData.city}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, city: e.target.value }))
+                }
+                className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-[#FF684D] focus:outline-none"
+              >
+                <option value="">Выберите город</option>
+                {cities.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div>
@@ -278,7 +332,7 @@ export const CardForm: FC<CardFormProps> = ({
             >
               <option value="">Выберите курс</option>
               {courses.map((course) => (
-                <option key={course} value={course.split(" ")[0]}>
+                <option key={course} value={course}>
                   {course}
                 </option>
               ))}
@@ -346,6 +400,16 @@ export const CardForm: FC<CardFormProps> = ({
           </div>
 
           <div className="flex gap-4 justify-center mt-8">
+            {isEditing && onDelete && (
+              <button
+                type="button"
+                onClick={onDelete}
+                disabled={deleting}
+                className="px-6 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+              >
+                {deleting ? "Удаление..." : "Удалить"}
+              </button>
+            )}
             <button
               type="button"
               onClick={onCancel}

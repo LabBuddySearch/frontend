@@ -1,9 +1,10 @@
 import { FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import labsterLogo from "@/assets/labster-logo.png";
 import { UnderlinedLink } from "@/components/UnderlinedLink";
 import { authService } from "@/services/authService";
+import { cities } from "@/hooks/cities";
+import { universities } from "@/hooks/universities";
 
 const AuthPage: FC = () => {
   const navigate = useNavigate();
@@ -13,43 +14,12 @@ const AuthPage: FC = () => {
     confirmPassword: "",
     name: "",
     city: "",
-    study: ""
+    universities: ""
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const cities = [
-    "Москва",
-    "Санкт-Петербург",
-    "Новосибирск",
-    "Екатеринбург",
-    "Казань",
-    "Нижний Новгород",
-    "Челябинск",
-    "Самара",
-    "Омск",
-    "Ростов-на-Дону",
-    "Уфа",
-    "Красноярск",
-    "Воронеж",
-    "Пермь",
-    "Волгоград"
-  ];
-
-  const studies = [
-    "МГУ им. М.В. Ломоносова",
-    "СПБГУ",
-    "МФТИ",
-    "ВШЭ",
-    "МГТУ им. Баумана",
-    "МГИМО",
-    "РЭУ им. Плеханова",
-    "МАИ",
-    "МИФИ",
-    "РГГУ",
-    "Другой ВУЗ",
-    "Колледж"
-  ];
+  const [useCustomCity, setUseCustomCity] = useState(false);
+  const [useCustomStudy, setUseCustomStudy] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +32,7 @@ const AuthPage: FC = () => {
       return;
     }
 
-    if (!formData.name || !formData.city || !formData.study) {
+    if (!formData.name || !formData.city || !formData.universities) {
       setError("Заполните все поля");
       setLoading(false);
       return;
@@ -74,7 +44,7 @@ const AuthPage: FC = () => {
         password: formData.password,
         name: formData.name,
         city: formData.city,
-        study: formData.study
+        study: formData.universities
       });
 
 
@@ -145,36 +115,86 @@ const AuthPage: FC = () => {
             <label className="text-sm font-medium text-gray-700 mb-2 block">
               Город
             </label>
-            <select
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              required
-            >
-              <option value="">Выберите город</option>
-              {cities.map(city => (
-                <option key={city} value={city}>{city}</option>
-              ))}
-            </select>
+            <div className="flex items-center mb-2">
+              <input
+                type="checkbox"
+                id="customCity"
+                checked={useCustomCity}
+                onChange={(e) => setUseCustomCity(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="customCity" className="text-sm text-gray-600">
+                Указать другой город
+              </label>
+            </div>
+            
+            {useCustomCity ? (
+              <input
+                type="text"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                placeholder="Введите ваш город"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            ) : (
+              <select
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                required
+              >
+                <option value="">Выберите город</option>
+                {cities.map(city => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">
               Учебное заведение
             </label>
-            <select
-              name="study"
-              value={formData.study}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              required
-            >
-              <option value="">Выберите учебное заведение</option>
-              {studies.map(study => (
-                <option key={study} value={study}>{study}</option>
-              ))}
-            </select>
+            <div className="flex items-center mb-2">
+              <input
+                type="checkbox"
+                id="customStudy"
+                checked={useCustomStudy}
+                onChange={(e) => setUseCustomStudy(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="customStudy" className="text-sm text-gray-600">
+                Указать другое учебное заведение
+              </label>
+            </div>
+            
+            {useCustomStudy ? (
+              <input
+                type="text"
+                name="study"
+                value={formData.universities}
+                onChange={handleChange}
+                placeholder="Введите ваше учебное заведение"
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            ) : (
+              <select
+                name="universities"
+                value={formData.universities}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                required
+              >
+                <option value="">Выберите учебное заведение</option>
+                {universities.map(university => (
+                  <option key={university} value={university}>{university}</option>
+                ))}
+              </select>
+            )}
           </div>
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">
