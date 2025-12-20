@@ -127,4 +127,27 @@ export const cardService = {
       throw new Error(`Ошибка удаления карточки: ${response.status}`);
     }
   },
+
+  async getLikedCards(): Promise<CardData[]> {
+    const userId = localStorage.getItem("authorId");
+
+    if (!userId) {
+      throw new Error("Пользователь не авторизован");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/user/${userId}/liked`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Ошибка загрузки лайкнутых карточек: ${response.status}`
+      );
+    }
+
+    return response.json();
+  },
 };

@@ -11,12 +11,14 @@ interface Props {
   isMyCardsPage?: boolean;
   modalCardId?: string | null;
   setModalCardId?: (arg: string | null) => void;
+  refreshKey?: number;
 }
 
 export const MinicardsList: FC<Props> = ({
   isMyCardsPage = false,
   modalCardId,
   setModalCardId,
+  refreshKey = 0,
 }: Props) => {
   const navigate = useNavigate();
   const { cardId } = useParams();
@@ -25,13 +27,20 @@ export const MinicardsList: FC<Props> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadUserCards = async () => {
+  const loadCards = async () => {
     try {
       setLoading(true);
-      const userCards = await cardService.getUserCards();
-      setCards(userCards);
+      setError("");
+      
+      if (isMyCardsPage) {
+        const userCards = await cardService.getUserCards();
+        setCards(userCards);
+      } else {
+        const likedCards = await cardService.getLikedCards();
+        setCards(likedCards);
+      }
     } catch (err) {
-      console.error('Ошибка загрузки пользовательских карточек:', err);
+      console.error('Ошибка загрузки карточек:', err);
       setError(err instanceof Error ? err.message : "Ошибка загрузки карточек");
     } finally {
       setLoading(false);
@@ -39,12 +48,12 @@ export const MinicardsList: FC<Props> = ({
   };
 
   useEffect(() => {
-    loadUserCards();
-  }, []);
+    loadCards();
+  }, [isMyCardsPage, refreshKey]);
 
   useEffect(() => {
     if (location.state?.refreshCards) {
-      loadUserCards();
+      loadCards();
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state?.refreshCards]);
@@ -82,13 +91,13 @@ export const MinicardsList: FC<Props> = ({
       <div className="border-t border-gray-200 mx-4" />
       <div className="flex flex-wrap justify-center bg-[#FFFFF5] py-4 pl-[6px] gap-8 max-h-[calc(100vh-124.8px)] overflow-y-auto [scrollbar-gutter:stable] custom-scrollbar">
         {cards.map((card) => (
-        <CardMini
-          key={card.id}
-          cardData={card}
-          isSelected={card.id === cardId || card.id === modalCardId}
-          onClick={() => onCardClick(card.id)}
-        />
-      ))}
+          <CardMini
+            key={card.id}
+            cardData={card}
+            isSelected={card.id === cardId || card.id === modalCardId}
+            onClick={() => onCardClick(card.id)}
+          />
+        ))}
         {cards.length === 0 && (
           <div className="text-gray-500 text-center py-8">
             {isMyCardsPage ? "У вас пока нет карточек" : "У вас пока нет лайков"}

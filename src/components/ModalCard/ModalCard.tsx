@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { CardData } from "@/types/card";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { likeService } from "@/services/likeService";
 
 interface Props {
   onClose: () => void;
@@ -8,6 +9,7 @@ interface Props {
   isFromMiniList?: boolean;
   onLike?: () => void;
   onUnlike?: () => void;
+  onLikeToggle?: () => void;
 }
 
 export const ModalCard: FC<Props> = ({ 
@@ -15,7 +17,8 @@ export const ModalCard: FC<Props> = ({
   onClose, 
   isFromMiniList = false,
   onLike,
-  onUnlike 
+  onUnlike,
+  onLikeToggle
 }: Props) => {
   const handleClose = () => {
     onClose();
@@ -24,13 +27,25 @@ export const ModalCard: FC<Props> = ({
   const borderColor = useLocalStorage(`card_color_${cardData.id}`, "#FF684D");
   const rawShadow = useLocalStorage(`card_shadow_${cardData.id}`, "0_0_20px_rgba(255,104,77,0.7)");
 
-  const handleLikeAction = () => {
-    if (isFromMiniList && onUnlike) {
-      onUnlike();
-    } else if (!isFromMiniList && onLike) {
-      onLike();
+  const handleLikeAction = async () => {
+    try {
+      if (isFromMiniList) {
+        await likeService.dislikeCard(cardData.id);
+        if (onUnlike) onUnlike();
+      } else {
+        await likeService.likeCard(cardData.id);
+        if (onLike) onLike();
+      }
+      
+      if (onLikeToggle) {
+        onLikeToggle();
+      }
+      
+      onClose();
+    } catch (err) {
+      console.error('Ошибка при лайке/дизлайке:', err);
+      alert('Не удалось выполнить действие. Попробуйте снова.');
     }
-    onClose();
   };
 
   const formatDate = (dateString: string) => {

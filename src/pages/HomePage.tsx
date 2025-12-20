@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState, useCallback } from "react";
 
 import { CardsList } from "@/components/CardsList";
 import { MenuDropdown } from "@/components/MenuDropdown";
@@ -13,19 +13,20 @@ const HomePage: FC = () => {
   const [currentCard, setCurrentCard] = useState<CardData | null>(null);
   const [isFromMiniList, setIsFromMiniList] = useState(false);
   const [allCards, setAllCards] = useState<CardData[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  useEffect(() => {
-    loadAllCards();
-  }, []);
-
-  const loadAllCards = async () => {
+  const loadAllCards = useCallback(async () => {
     try {
       const cards = await cardService.getAllCards();
       setAllCards(cards);
     } catch (error) {
       console.error("Ошибка загрузки карточек:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadAllCards();
+  }, [loadAllCards, refreshKey]);
 
   useEffect(() => {
     if (modalCardId) {
@@ -33,21 +34,48 @@ const HomePage: FC = () => {
       setCurrentCard(foundCard || null);
     }
   }, [modalCardId, allCards]);
-
-  const handleLike = () => {
-    console.log("Добавить в лайкнутые:", modalCardId);
-
-    modalCardId && likeService.likeCard(modalCardId);
-
-    setModalCardId(null);
+  const refreshAllCards = () => {
+    setRefreshKey(prev => prev + 1);
   };
 
-  const handleUnlike = () => {
-    console.log("Удалить из лайкнутых:", modalCardId);
+  const handleLike = async () => {
+    if (!modalCardId) return;
 
-    modalCardId && likeService.dislikeCard(modalCardId);
+    try {
+      console.log("Добавить в лайкнутые:", modalCardId);
+      await likeService.likeCard(modalCardId);
+      refreshAllCards();
+      const updatedCards = await cardService.getAllCards();
+      const updatedCard = updatedCards.find(card => card.id === modalCardId);
+      setCurrentCard(updatedCard || null);
+      
+      setModalCardId(null);
+    } catch (error) {
+      console.error("Ошибка при лайке:", error);
+      alert("Не удалось лайкнуть карточку");
+    }
+  };
 
-    setModalCardId(null);
+  const handleUnlike = async () => {
+    if (!modalCardId) return;
+
+    try {
+      console.log("Удалить из лайкнутых:", modalCardId);
+      await likeService.dislikeCard(modalCardId);
+    
+      refreshAllCards();
+      if (isFromMiniList) {
+        setModalCardId(null);
+        setCurrentCard(null);
+      } else {
+        const updatedCards = await cardService.getAllCards();
+        const updatedCard = updatedCards.find(card => card.id === modalCardId);
+        setCurrentCard(updatedCard || null);
+      }
+    } catch (error) {
+      console.error("Ошибка при удалении лайка:", error);
+      alert("Не удалось убрать лайк");
+    }
   };
 
   const handleCloseModal = () => {
@@ -65,6 +93,7 @@ const HomePage: FC = () => {
             setModalCardId(id);
             setIsFromMiniList(true);
           }}
+          refreshKey={refreshKey}
         />
       </aside>
       <main className="flex-1">
@@ -75,6 +104,7 @@ const HomePage: FC = () => {
             setModalCardId(id);
             setIsFromMiniList(false);
           }}
+          refreshKey={refreshKey}
         />
       </main>
 
@@ -85,6 +115,7 @@ const HomePage: FC = () => {
           isFromMiniList={isFromMiniList}
           onLike={handleLike}
           onUnlike={handleUnlike}
+          onLikeToggle={refreshAllCards}
         />
       )}
     </div>

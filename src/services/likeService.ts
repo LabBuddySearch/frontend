@@ -55,7 +55,13 @@ export const likeService = {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Ошибка:", response.status, errorText);
-      throw new Error(`Ошибка дизлайка карточки: ${response.status}`);
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        throw new Error(`Ошибка дизлайка карточки: ${response.status} - ${errorData.message || errorText}`);
+      } catch {
+        throw new Error(`Ошибка дизлайка карточки: ${response.status} - ${errorText}`);
+      }
     }
 
     return response.status;
