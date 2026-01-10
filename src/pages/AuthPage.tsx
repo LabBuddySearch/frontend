@@ -47,10 +47,16 @@ const AuthPage: FC = () => {
         study: formData.universities
       });
 
-
       localStorage.setItem('authorId', userData.id);
       localStorage.setItem('userName', userData.name);
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('userEmail', userData.email || formData.email);
+      localStorage.setItem('userCity', formData.city);
+      localStorage.setItem('userStudy', formData.universities);
+      localStorage.setItem('user', JSON.stringify({
+        ...userData,
+        city: formData.city,
+        study: formData.universities
+      }));
       navigate("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Произошла ошибка при регистрации");

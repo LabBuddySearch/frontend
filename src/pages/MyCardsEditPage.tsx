@@ -114,6 +114,19 @@ const MyCardsEditPage: FC = () => {
     }
   };
 
+  const getFileNames = () => {
+    if (!cardData.original || cardData.original.length === 0) {
+      return [];
+    }
+    
+    return cardData.original.filter(fileName => {
+      const cleanName = fileName.split('/').pop() || fileName;
+      return !cleanName.includes('__NO_FILES__') && 
+             !cleanName.includes('empty') && 
+             cleanName.trim() !== '';
+    });
+  };
+
   const initialData = {
     cardId: cardData.id,
     title: cardData.title,
@@ -122,7 +135,8 @@ const MyCardsEditPage: FC = () => {
     description: cardData.description,
     university: cardData.study,
     course: cardData.course.toString(),
-    city: cardData.city
+    city: cardData.city,
+    existingFiles: getFileNames()
   };
 
   return (

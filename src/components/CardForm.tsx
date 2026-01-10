@@ -11,6 +11,7 @@ interface CardFormData {
   files: File[];
   university: string;
   city: string;
+  existingFiles: string[];
   course: string;
   color: string;
   shadow: string;
@@ -25,6 +26,12 @@ interface CardFormProps {
   loading?: boolean;
   onDelete?: () => void;
   deleting?: boolean;
+}
+
+interface FileItem {
+  name: string;
+  isExisting: boolean;
+  index: number;
 }
 
 const workTypes = [
@@ -79,6 +86,7 @@ export const CardForm: FC<CardFormProps> = ({
     description: "",
     files: [],
     university: "",
+    existingFiles: [],
     course: "",
     city: "",
     color: "#FFB4A7",
@@ -123,6 +131,36 @@ export const CardForm: FC<CardFormProps> = ({
   const handleColorChange = (color: string, shadow: string) => {
     setFormData((prev) => ({ ...prev, color, shadow }));
   };
+
+  const getAllFileNames = (): FileItem[] => {
+    const allFiles: FileItem[] = [];
+    
+    if (formData.existingFiles && formData.existingFiles.length > 0) {
+      formData.existingFiles.forEach((fileName: string, index: number) => {
+        const cleanName = fileName.split('/').pop() || fileName;
+        allFiles.push({
+          name: cleanName,
+          isExisting: true,
+          index
+        });
+      });
+    }
+    
+    if (formData.files && formData.files.length > 0) {
+      formData.files.forEach((file: File, index: number) => {
+        allFiles.push({
+          name: file.name,
+          isExisting: false,
+          index
+        });
+      });
+    }
+    
+    return allFiles;
+  };
+
+  const fileNames = getAllFileNames();
+
 
   return (
     <div className="h-[calc(100vh-76px)] p-6">
@@ -200,7 +238,24 @@ export const CardForm: FC<CardFormProps> = ({
             <label className="block text-lg font-semibold text-gray-900 mb-2">
               Файлы
             </label>
-            <div className="relative">
+            {fileNames.length > 0 && (
+              <div className="mb-4 p-3 border border-gray-200 rounded-lg bg-gray-50">
+                <p className="text-sm font-medium text-gray-700 mb-2">
+                  {isEditing ? "Текущие файлы:" : "Прикрепленные файлы:"}
+                </p>
+                <ul className="space-y-1">
+                  {fileNames.map((file, index) => (
+                    <li key={`${file.isExisting ? 'existing' : 'new'}-${index}`} 
+                        className="flex items-center justify-between text-sm text-gray-600">
+                      <span className="truncate" title={file.name}>
+                        {file.name}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+             <div className="relative">
               <input
                 type="file"
                 multiple
@@ -222,8 +277,8 @@ export const CardForm: FC<CardFormProps> = ({
                   />
                 </svg>
                 <span className="text-gray-500">
-                  {formData.files.length > 0
-                    ? `Выбрано файлов: ${formData.files.length}`
+                  {fileNames.length > 0
+                    ? `Добавить еще файлов (всего: ${fileNames.length})`
                     : "Прикрепите файлы"}
                 </span>
               </div>

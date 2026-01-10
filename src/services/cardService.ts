@@ -4,77 +4,48 @@ const API_BASE_URL = "http://localhost:8080/api/cards";
 
 export const cardService = {
    async createCard(cardData: CreateCardRequest): Promise<CardResponse> {
-  const authorId = localStorage.getItem("authorId");
+      const authorId = localStorage.getItem("authorId");
 
-  if (!authorId) {
-    throw new Error("Не авторизован — войдите заново");
-  }
-
-  const params = new URLSearchParams();
-  params.append("authorId", authorId);
-  params.append("type", cardData.type);
-  params.append("subject", cardData.subject);
-  params.append("title", cardData.title);
-  params.append("course", cardData.course.toString());
-  
-  if (cardData.description) {
-    params.append("description", cardData.description);
-  }
-  if (cardData.study) {
-    params.append("study", cardData.study);
-  }
-  if (cardData.city) {
-    params.append("city", cardData.city);
-  }
-
-  const url = `${API_BASE_URL}/user?${params.toString()}`;
-  
-  if (cardData.files && cardData.files.length > 0) {
-    const formData = new FormData();
-    
-    cardData.files.forEach((file: any) => {
-      if (file instanceof File) {
-        formData.append("files", file);
-      } else if (typeof file === 'string') {
-        const blob = new Blob([], { type: 'application/octet-stream' });
-        const fakeFile = new File([blob], file, { type: 'application/octet-stream' });
-        formData.append("files", fakeFile);
+      if (!authorId) {
+        throw new Error("Не авторизован — войдите заново");
       }
-    });
-    
-    console.log("Отправка с файлами");
-    
-    const response = await fetch(url, {
-      method: "POST",
-      body: formData,
-    });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Ошибка создания карточки: ${response.status} - ${errorText}`);
-    }
+      const formData = new FormData();
+      
+      formData.append("authorId", authorId);
+      formData.append("type", cardData.type);
+      formData.append("subject", cardData.subject);
+      formData.append("title", cardData.title);
+      formData.append("course", cardData.course.toString());
+      formData.append("description", cardData.description || "");
+      formData.append("study", cardData.study || "");
+      formData.append("city", cardData.city || "");
 
-    return response.json();
-    
-  } else {
-    console.log("Отправка без файлов");
-    
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        'Accept': '*/*',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    });
+      if (cardData.files && cardData.files.length > 0) {
+        cardData.files.forEach((file: any) => {
+          if (file instanceof File) {
+            formData.append("files", file);
+          }
+        });
+      } else {
+        const emptyFile = new File([""], "__NO_FILES__", { type: "text/plain" });
+        formData.append("files", emptyFile);
+      }
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Ошибка создания карточки: ${response.status} - ${errorText}`);
-    }
+      const url = `${API_BASE_URL}/user`;
+      
+      const response = await fetch(url, {
+        method: "POST",
+        body: formData,
+      });
 
-    return response.json();
-  }
-},
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Ошибка создания карточки: ${response.status} - ${errorText}`);
+      }
+
+      return response.json();
+    },
 
   async getAllCards(): Promise<CardData[]> {
     const response = await fetch(`${API_BASE_URL}`, {

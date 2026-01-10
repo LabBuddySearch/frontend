@@ -1,6 +1,5 @@
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { Button } from "@/components/Button";
 import { MenuDropdown } from "@/components/MenuDropdown";
 
@@ -19,6 +18,53 @@ const SettingsPage: FC = () => {
     newPassword: "",
     confirmPassword: ""
   });
+  const [useCustomCity, setUseCustomCity] = useState(false);
+  const [useCustomStudy, setUseCustomStudy] = useState(false);
+
+  // Загружаем данные пользователя при монтировании компонента
+  useEffect(() => {
+    const loadUserData = () => {
+      const userName = localStorage.getItem('userName');
+      const userEmail = localStorage.getItem('userEmail');
+      const userCity = localStorage.getItem('userCity');
+      const userStudy = localStorage.getItem('userStudy');
+      const userData = localStorage.getItem('user');
+      
+      if (userData) {
+        try {
+          const parsedUser = JSON.parse(userData);
+          const userStudyValue = userStudy || parsedUser.study || "";
+          const userCityValue = userCity || parsedUser.city || "";
+          
+          // Проверяем, есть ли значение в стандартных списках
+          const isStudyInList = universities.includes(userStudyValue);
+          const isCityInList = cities.includes(userCityValue);
+          
+          setUseCustomStudy(!isStudyInList);
+          setUseCustomCity(!isCityInList);
+          
+          setProfileData(prev => ({
+            ...prev,
+            login: userName || parsedUser.name || "",
+            university: userStudyValue,
+            city: userCityValue
+          }));
+        } catch (error) {
+          console.error('Ошибка парсинга user данных:', error);
+        }
+      } else {
+        // Если нет JSON, используем отдельные поля
+        setProfileData(prev => ({
+          ...prev,
+          login: userName || "",
+          university: userStudy || "",
+          city: userCity || ""
+        }));
+      }
+    };
+
+    loadUserData();
+  }, []);
 
   const universities = [
     "МГУ им. М.В. Ломоносова",
@@ -30,7 +76,8 @@ const SettingsPage: FC = () => {
     "РЭУ им. Плеханова",
     "МАИ",
     "МИФИ",
-    "РГГУ"
+    "РГГУ",
+    "МТУСИ"
   ];
 
   const cities = [
@@ -56,11 +103,53 @@ const SettingsPage: FC = () => {
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Сохранены данные профиля:", profileData);
+    
+    localStorage.setItem('userName', profileData.login);
+    localStorage.setItem('userStudy', profileData.university);
+    localStorage.setItem('userCity', profileData.city);
+    
+    const currentUser = localStorage.getItem('user');
+    if (currentUser) {
+      try {
+        const parsedUser = JSON.parse(currentUser);
+        const updatedUser = {
+          ...parsedUser,
+          name: profileData.login,
+          study: profileData.university,
+          city: profileData.city
+        };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      } catch (error) {
+        console.error('Ошибка обновления user данных:', error);
+      }
+    }
+    
+    const isStudyInList = universities.includes(profileData.university);
+    const isCityInList = cities.includes(profileData.city);
+    
+    setUseCustomStudy(!isStudyInList);
+    setUseCustomCity(!isCityInList);
+    
+    alert("Данные профиля сохранены!");
   };
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert("Новый пароль и подтверждение не совпадают!");
+      return;
+    }
+    
     console.log("Смена пароля:", passwordData);
+    
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: ""
+    });
+    
+    alert("Пароль успешно изменен!");
   };
 
   const addContactField = () => {
@@ -137,14 +226,14 @@ const SettingsPage: FC = () => {
               <form onSubmit={handleProfileSubmit} className="space-y-6">
                 <div>
                   <label className="block text-lg font-semibold text-gray-900 mb-2">
-                    Логин
+                    Имя
                   </label>
                   <input
                     type="text"
                     value={profileData.login}
                     onChange={(e) => setProfileData(prev => ({ ...prev, login: e.target.value }))}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
-                    placeholder="Введите логин"
+                    placeholder="Введите ваше имя"
                   />
                 </div>
 
@@ -152,33 +241,78 @@ const SettingsPage: FC = () => {
                   <label className="block text-lg font-semibold text-gray-900 mb-2">
                     Вуз/колледж
                   </label>
-                  <select
-                    value={profileData.university}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, university: e.target.value }))}
-                    className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-[#FF684D] focus:outline-none"
-                  >
-                    <option value="">Выберите учебное заведение</option>
-                    {universities.map(uni => (
-                      <option key={uni} value={uni}>{uni}</option>
-                    ))}
-                  </select>
+                  <div className="flex items-center mb-2">
+                    <input
+                      type="checkbox"
+                      id="customStudy"
+                      checked={useCustomStudy}
+                      onChange={(e) => setUseCustomStudy(e.target.checked)}
+                      className="mr-2"
+                    />
+                    <label htmlFor="customStudy" className="text-sm text-gray-600">
+                      Указать другое учебное заведение
+                    </label>
+                  </div>
+                  
+                  {useCustomStudy ? (
+                    <input
+                      type="text"
+                      value={profileData.university}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, university: e.target.value }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
+                      placeholder="Введите ваше учебное заведение"
+                    />
+                  ) : (
+                    <select
+                      value={profileData.university}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, university: e.target.value }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-[#FF684D] focus:outline-none"
+                    >
+                      <option value="">Выберите учебное заведение</option>
+                      {universities.map(uni => (
+                        <option key={uni} value={uni}>{uni}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
-
 
                 <div>
                   <label className="block text-lg font-semibold text-gray-900 mb-2">
                     Город
                   </label>
-                  <select
-                    value={profileData.city}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, city: e.target.value }))}
-                    className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-[#FF684D] focus:outline-none"
-                  >
-                    <option value="">Выберите город</option>
-                    {cities.map(city => (
-                      <option key={city} value={city}>{city}</option>
-                    ))}
-                  </select>
+                  <div className="flex items-center mb-2">
+                    <input
+                      type="checkbox"
+                      id="customCity"
+                      checked={useCustomCity}
+                      onChange={(e) => setUseCustomCity(e.target.checked)}
+                      className="mr-2"
+                    />
+                    <label htmlFor="customCity" className="text-sm text-gray-600">
+                      Указать другой город
+                    </label>
+                  </div>
+                  
+                  {useCustomCity ? (
+                    <input
+                      type="text"
+                      value={profileData.city}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, city: e.target.value }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
+                      placeholder="Введите ваш город"
+                    />
+                  ) : (
+                    <select
+                      value={profileData.city}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, city: e.target.value }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-[#FF684D] focus:outline-none"
+                    >
+                      <option value="">Выберите город</option>
+                      {cities.map(city => (
+                        <option key={city} value={city}>{city}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 <div>

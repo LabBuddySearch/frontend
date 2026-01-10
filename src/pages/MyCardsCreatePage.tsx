@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CardForm } from "@/components/CardForm";
 import { cardService } from "@/services/cardService";
@@ -8,6 +8,40 @@ const MyCardsCreatePage: FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [userData, setUserData] = useState({
+    university: "",
+    city: "",
+    course: ""
+  });
+
+  useEffect(() => {
+    const loadUserData = () => {
+      const userCity = localStorage.getItem('userCity');
+      const userStudy = localStorage.getItem('userStudy');
+      
+      let userCourse = "1";
+      const userFromStorage = localStorage.getItem('user');
+      if (userFromStorage) {
+        try {
+          const parsedUser = JSON.parse(userFromStorage);
+          if (parsedUser.course) {
+            const courseMatch = parsedUser.course.match(/\d+/);
+            userCourse = courseMatch ? courseMatch[0] : "1";
+          }
+        } catch (error) {
+          console.error('Ошибка парсинга user данных:', error);
+        }
+      }
+      
+      setUserData({
+        university: userStudy || "",
+        city: userCity || "",
+        course: userCourse
+      });
+    };
+
+    loadUserData();
+  }, []);
 
   const handleSubmit = async (data: any) => {
     setLoading(true);
@@ -29,8 +63,8 @@ const MyCardsCreatePage: FC = () => {
         title: data.title,
         course: courseNumber,
         description: data.description || "",
-        study: data.university || "",
-        city: data.city || "",
+        study: data.university || userData.university,
+        city: data.city || userData.city,
         files: data.files || [],
       };
 
@@ -59,6 +93,12 @@ const MyCardsCreatePage: FC = () => {
     navigate("/my-cards");
   };
 
+  const initialData = {
+    university: userData.university,
+    city: userData.city,
+    course: userData.course
+  };
+
   return (
     <>
       {error && (
@@ -79,6 +119,7 @@ const MyCardsCreatePage: FC = () => {
         onCancel={handleCancel}
         isEditing={false}
         loading={loading}
+        initialData={initialData}
       />
     </>
   );
