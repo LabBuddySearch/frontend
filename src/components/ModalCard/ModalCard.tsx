@@ -62,7 +62,7 @@ export const ModalCard: FC<Props> = ({
     }
   };
 
-  const files = cardData.files || [];
+  const files = cardData.original || cardData.storage || cardData.files || [];
 
   const shadowStyle = rawShadow 
     ? { boxShadow: rawShadow.replace(/_/g, " ") }
@@ -123,10 +123,66 @@ export const ModalCard: FC<Props> = ({
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Файлы</h3>
               <div className="bg-gray-100 rounded-lg p-3">
                 {files.length > 0 ? (
-                  <ul className="text-sm text-gray-600">
-                    {files.map((file, index) => (
-                      <li key={index}>{file}</li>
-                    ))}
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    {files.map((file, index) => {
+                      const storageFileName = cardData.storage?.[index] || file;
+                      const originalFileName = cardData.original?.[index] || file;
+                      const displayName = originalFileName.split('/').pop() || originalFileName;
+                      const cleanDisplayName = displayName.split('?')[0] || 'file';
+                      
+                      const downloadPath = storageFileName.split('/').pop() || storageFileName;
+                      
+                      return (
+                        <li key={index} className="truncate group">
+                          <button
+                            onClick={async () => {
+                              try {
+                                const downloadUrl = `http://localhost:8080/api/cards/download/${encodeURIComponent(downloadPath)}`;
+                                
+                                const response = await fetch(downloadUrl);
+                                
+                                if (response.ok) {
+                                  const blob = await response.blob();
+
+                                  const url = window.URL.createObjectURL(blob);
+                                  const a = document.createElement('a');
+                                  a.href = url;
+                                  a.download = cleanDisplayName || 'file';
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  document.body.removeChild(a);
+                                  window.URL.revokeObjectURL(url);
+                                } else {
+                                  console.error('Ошибка скачивания:', response.status);
+                                  window.open(file, '_blank');
+                                }
+                              } catch (error) {
+                                console.error('Ошибка скачивания:', error);
+                                window.open(file, '_blank');
+                              }
+                            }}
+                            className="text-blue-600 hover:text-blue-800 hover:underline transition-colors inline-flex items-center cursor-pointer bg-transparent border-none p-0 text-left"
+                            title={`Скачать ${cleanDisplayName}`}
+                          >
+                            {cleanDisplayName}
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              className="h-4 w-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" 
+                              fill="none" 
+                              viewBox="0 0 24 24" 
+                              stroke="currentColor"
+                            >
+                              <path 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                strokeWidth={2} 
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" 
+                              />
+                            </svg>
+                          </button>
+                        </li>
+                      );
+                    })}
                   </ul>
                 ) : (
                   <p className="text-sm text-gray-600 text-center">Нет файлов</p>
@@ -147,7 +203,6 @@ export const ModalCard: FC<Props> = ({
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">Автор</h3>
                 <div className="bg-gray-100 rounded-lg p-2">
-                  {/* Автор берется из cardData.authorName */}
                   <p className="text-sm text-gray-600 text-start">
                     {cardData.authorName || "Неизвестный автор"}
                   </p>

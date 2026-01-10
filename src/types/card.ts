@@ -6,23 +6,30 @@ export interface CardData {
   description: string;
   study: string;
   city: string;
-  course: string;
+  course: number;
   createdAt: string;
   authorId: string;
   authorName: string;
+  status?: string;
+  currentHelpers?: number;
   contact?: string;
   files?: string[];
+  original?: string[];
+  storage?: string[];
 }
 
 export interface CreateCardRequest {
-  authorId: string;
   type: string;
   subject: string;
   title: string;
-  course: number;
   description: string;
   study: string;
   city: string;
+  course: number;
+  contact?: string;
+  files?: string[];
+  original?: string[];
+  storage?: string[];
 }
 
 export interface CardResponse {

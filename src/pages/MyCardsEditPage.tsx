@@ -50,7 +50,8 @@ const MyCardsEditPage: FC = () => {
           description: data.description,
           university: data.university,
           course: data.course,
-          city: data.city
+          city: data.city,
+          files: data.files || []
         };
 
         await cardService.updateCard(cardId, backendData);
@@ -120,7 +121,7 @@ const MyCardsEditPage: FC = () => {
     workType: cardData.type,
     description: cardData.description,
     university: cardData.study,
-    course: cardData.course,
+    course: cardData.course.toString(),
     city: cardData.city
   };
 

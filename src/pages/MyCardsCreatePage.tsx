@@ -14,11 +14,9 @@ const MyCardsCreatePage: FC = () => {
     setError("");
 
     try {
-
       const authorId = localStorage.getItem("authorId");
-      const authorName = localStorage.getItem("userName");
 
-      if (!authorId || !authorName) {
+      if (!authorId) {
         throw new Error("Не авторизован — войдите заново");
       }
 
@@ -26,14 +24,14 @@ const MyCardsCreatePage: FC = () => {
 
       const cardData = {
         authorId: authorId,
-        authorName: authorName,
         type: data.workType,
         subject: data.subject,
         title: data.title,
         course: courseNumber,
-        description: data.description,
-        study: data.university,
-        city: data.city
+        description: data.description || "",
+        study: data.university || "",
+        city: data.city || "",
+        files: data.files || [],
       };
 
       console.log("Отправка данных карточки:", cardData);

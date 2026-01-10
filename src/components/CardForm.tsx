@@ -37,7 +37,7 @@ const workTypes = [
   "Диплом",
 ];
 
-const courses = ["1 курс", "2 курс", "3 курс", "4 курс", "5 курс", "6 курс"];
+const courses = ["1", "2", "3", "4", "5", "6"];
 
 const colorOptions = [
   { border: "#FFB4A7", shadow: "0_0_20px_rgba(255,180,167,0.3)" },

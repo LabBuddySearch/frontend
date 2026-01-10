@@ -174,7 +174,7 @@ const AuthPage: FC = () => {
             {useCustomStudy ? (
               <input
                 type="text"
-                name="study"
+                name="universities"
                 value={formData.universities}
                 onChange={handleChange}
                 placeholder="Введите ваше учебное заведение"
