@@ -4,12 +4,13 @@ import { useNavigate } from "react-router-dom";
 import labsterLogo from "@/assets/labster-logo.png";
 import { UnderlinedLink } from "@/components/UnderlinedLink";
 import { authService } from "@/services/authService";
+import { PATHS } from "@/router/paths";
 
 const LoginPage: FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
-    password: ""
+    password: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -21,10 +22,10 @@ const LoginPage: FC = () => {
 
     try {
       const response = await authService.login(formData);
-      localStorage.setItem('authorId', response.id);
-      localStorage.setItem('userName', response.name);
-      
-      navigate("/");
+      localStorage.setItem("authorId", response.id);
+      localStorage.setItem("userName", response.name);
+
+      navigate(PATHS.ROOT);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Произошла ошибка");
     } finally {
@@ -33,9 +34,9 @@ const LoginPage: FC = () => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -49,7 +50,7 @@ const LoginPage: FC = () => {
         <p className="text-gray-600 text-center mb-6">
           Введите почту и пароль, чтобы войти
         </p>
-        
+
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}

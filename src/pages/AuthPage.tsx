@@ -5,6 +5,7 @@ import { UnderlinedLink } from "@/components/UnderlinedLink";
 import { authService } from "@/services/authService";
 import { cities } from "@/hooks/cities";
 import { universities } from "@/hooks/universities";
+import { PATHS } from "@/router/paths";
 
 const AuthPage: FC = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const AuthPage: FC = () => {
     confirmPassword: "",
     name: "",
     city: "",
-    universities: ""
+    universities: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -44,31 +45,38 @@ const AuthPage: FC = () => {
         password: formData.password,
         name: formData.name,
         city: formData.city,
-        study: formData.universities
+        study: formData.universities,
       });
 
-      localStorage.setItem('authorId', userData.id);
-      localStorage.setItem('userName', userData.name);
-      localStorage.setItem('userEmail', userData.email || formData.email);
-      localStorage.setItem('userCity', formData.city);
-      localStorage.setItem('userStudy', formData.universities);
-      localStorage.setItem('user', JSON.stringify({
-        ...userData,
-        city: formData.city,
-        study: formData.universities
-      }));
-      navigate("/");
+      localStorage.setItem("authorId", userData.id);
+      localStorage.setItem("userName", userData.name);
+      localStorage.setItem("userEmail", userData.email || formData.email);
+      localStorage.setItem("userCity", formData.city);
+      localStorage.setItem("userStudy", formData.universities);
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...userData,
+          city: formData.city,
+          study: formData.universities,
+        })
+      );
+      navigate(PATHS.ROOT);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Произошла ошибка при регистрации");
+      setError(
+        err instanceof Error ? err.message : "Произошла ошибка при регистрации"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData(prev => ({
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -133,7 +141,7 @@ const AuthPage: FC = () => {
                 Указать другой город
               </label>
             </div>
-            
+
             {useCustomCity ? (
               <input
                 type="text"
@@ -153,8 +161,10 @@ const AuthPage: FC = () => {
                 required
               >
                 <option value="">Выберите город</option>
-                {cities.map(city => (
-                  <option key={city} value={city}>{city}</option>
+                {cities.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
                 ))}
               </select>
             )}
@@ -176,7 +186,7 @@ const AuthPage: FC = () => {
                 Указать другое учебное заведение
               </label>
             </div>
-            
+
             {useCustomStudy ? (
               <input
                 type="text"
@@ -196,8 +206,10 @@ const AuthPage: FC = () => {
                 required
               >
                 <option value="">Выберите учебное заведение</option>
-                {universities.map(university => (
-                  <option key={university} value={university}>{university}</option>
+                {universities.map((university) => (
+                  <option key={university} value={university}>
+                    {university}
+                  </option>
                 ))}
               </select>
             )}
@@ -242,7 +254,7 @@ const AuthPage: FC = () => {
         </form>
         <div className="text-center mt-4">
           Есть аккаунт?{" "}
-          <UnderlinedLink onClick={() => navigate("/login")}>
+          <UnderlinedLink onClick={() => navigate(PATHS.LOGIN)}>
             Войти
           </UnderlinedLink>
         </div>

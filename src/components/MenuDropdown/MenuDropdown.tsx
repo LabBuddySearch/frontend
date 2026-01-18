@@ -30,6 +30,7 @@ export const MenuDropdown = () => {
   }, []);
 
   const menuElements: Array<MenuElementProps> = [
+    { label: "Главная", onClick: () => navigate(PATHS.ROOT) },
     { label: "Мои карточки", onClick: () => navigate(PATHS.MY_CARDS) },
     { label: "Настройки", onClick: () => navigate(PATHS.SETTINGS) },
     {
@@ -47,7 +48,12 @@ export const MenuDropdown = () => {
       onClick={() => setMenuIsDropped((prev) => !prev)}
       className="relative"
     >
-      <div className="bg-gray-100 hover:opacity-75 px-12 py-6 cursor-pointer">
+      <div className="flex justify-center items-center gap-[10px] bg-gray-100 hover:opacity-75 px-4 py-6 cursor-pointer">
+        <div className="flex flex-col justify-center h-[24px] w-[24px] gap-[4px] hover:gap-[6px] transition-gap duration-[200ms]">
+          <div className="h-[4px] w-[24px] bg-[#000000a0] rounded-md"></div>
+          <div className="h-[4px] w-[24px] bg-[#000000a0] rounded-md"></div>
+          <div className="h-[4px] w-[24px] bg-[#000000a0] rounded-md"></div>
+        </div>
         <p className="max-h-[28px] text-xl font-medium text-center select-none truncate">
           {authorName || "Логин пользователя"}
         </p>

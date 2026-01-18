@@ -20,9 +20,9 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: (
-          //<PrivateRoute>
-          <HomePage />
-          //</PrivateRoute>
+          <PrivateRoute>
+            <HomePage />
+          </PrivateRoute>
         ),
       },
       {
@@ -36,17 +36,17 @@ export const router = createBrowserRouter([
       {
         path: PATHS.SETTINGS,
         element: (
-          //<PrivateRoute>
-          <SettingsPage />
-          //</PrivateRoute>
+          <PrivateRoute>
+            <SettingsPage />
+          </PrivateRoute>
         ),
       },
       {
         path: PATHS.MY_CARDS,
         element: (
-          //<PrivateRoute>
-          <MyCardsLayout />
-          //</PrivateRoute>
+          <PrivateRoute>
+            <MyCardsLayout />
+          </PrivateRoute>
         ),
         children: [
           {
@@ -65,10 +65,6 @@ export const router = createBrowserRouter([
       },
       {
         path: PATHS.NOT_FOUND,
-        element: <NotFoundPage />,
-      },
-      {
-        path: "*",
         element: <NotFoundPage />,
       },
     ],

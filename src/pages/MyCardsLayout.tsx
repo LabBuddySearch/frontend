@@ -11,7 +11,7 @@ const MyCardsLayout: FC = () => {
 
   return (
     <div className="min-h-screen flex bg-[#FFFFF5]">
-      <aside className="w-96 min-w-96 border-r border-gray-200">
+      <aside className="w-[174.8px] sm:w-[348.8px] flex-shrink-0 border-r border-gray-200">
         <MenuDropdown />
         <MinicardsList isMyCardsPage />
       </aside>
@@ -25,7 +25,9 @@ const MyCardsLayout: FC = () => {
               : "Мои карточки"}
           </h1>
           <div className="flex gap-4">
-            <Button onClick={() => navigate("/my-cards/create")}>Создать</Button>
+            <Button onClick={() => navigate("/my-cards/create")}>
+              Создать
+            </Button>
             <Button onClick={() => navigate("/")}>На главную</Button>
           </div>
         </header>

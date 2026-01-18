@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { CardForm } from "@/components/CardForm";
 import { cardService } from "@/services/cardService";
 import { setLocalStorageWithEvent } from "@/hooks/useLocalStorage";
+import { PATHS } from "@/router/paths";
 
 const MyCardsCreatePage: FC = () => {
   const navigate = useNavigate();
@@ -11,16 +12,17 @@ const MyCardsCreatePage: FC = () => {
   const [userData, setUserData] = useState({
     university: "",
     city: "",
-    course: ""
+    course: "",
   });
 
+  // Не понял, зачем здесь стейт для трёх полей, и в эффекте их дополнение данными из локалстораджа
   useEffect(() => {
     const loadUserData = () => {
-      const userCity = localStorage.getItem('userCity');
-      const userStudy = localStorage.getItem('userStudy');
-      
+      const userCity = localStorage.getItem("userCity");
+      const userStudy = localStorage.getItem("userStudy");
+
       let userCourse = "1";
-      const userFromStorage = localStorage.getItem('user');
+      const userFromStorage = localStorage.getItem("user");
       if (userFromStorage) {
         try {
           const parsedUser = JSON.parse(userFromStorage);
@@ -29,14 +31,14 @@ const MyCardsCreatePage: FC = () => {
             userCourse = courseMatch ? courseMatch[0] : "1";
           }
         } catch (error) {
-          console.error('Ошибка парсинга user данных:', error);
+          console.error("Ошибка парсинга user данных:", error);
         }
       }
-      
+
       setUserData({
         university: userStudy || "",
         city: userCity || "",
-        course: userCourse
+        course: userCourse,
       });
     };
 
@@ -71,12 +73,11 @@ const MyCardsCreatePage: FC = () => {
       console.log("Отправка данных карточки:", cardData);
 
       const response = await cardService.createCard(cardData);
-      
+
       setLocalStorageWithEvent(`card_color_${response.id}`, data.color);
       setLocalStorageWithEvent(`card_shadow_${response.id}`, data.shadow);
-      
-      navigate("/my-cards", { state: { refreshCards: true } });
 
+      navigate(PATHS.MY_CARDS, { state: { refreshCards: true } });
     } catch (err) {
       console.error("Ошибка создания карточки:", err);
       setError(
@@ -90,13 +91,29 @@ const MyCardsCreatePage: FC = () => {
   };
 
   const handleCancel = () => {
-    navigate("/my-cards");
+    navigate(PATHS.MY_CARDS);
   };
 
+  // Временно так
+  const userCity =
+    localStorage.getItem("userCity") ||
+    JSON.parse(localStorage.getItem("user") || "").city ||
+    "";
+  const userStudy =
+    localStorage.getItem("userStudy") ||
+    JSON.parse(localStorage.getItem("user") || "").study ||
+    "";
+
+  let userCourse = "1";
+  const courseFromStorage = localStorage.getItem("userCourse");
+  if (courseFromStorage) {
+    userCourse = courseFromStorage[0] || "1";
+  }
+
   const initialData = {
-    university: userData.university,
-    city: userData.city,
-    course: userData.course
+    university: userStudy || userData.university,
+    city: userCity || userData.city,
+    course: userCourse || userData.course,
   };
 
   return (
@@ -105,7 +122,7 @@ const MyCardsCreatePage: FC = () => {
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 mx-6 mt-4">
           {error}
           <div className="mt-2">
-            <button 
+            <button
               onClick={() => navigate("/login")}
               className="text-sm underline hover:no-underline"
             >

@@ -3,52 +3,70 @@ import { CreateCardRequest, CardResponse, CardData } from "@/types/card";
 const API_BASE_URL = "http://localhost:8080/api/cards";
 
 export const cardService = {
-   async createCard(cardData: CreateCardRequest): Promise<CardResponse> {
-      const authorId = localStorage.getItem("authorId");
+  async createCard(cardData: CreateCardRequest): Promise<CardResponse> {
+    const authorId = localStorage.getItem("authorId");
 
-      if (!authorId) {
-        throw new Error("Не авторизован — войдите заново");
-      }
+    if (!authorId) {
+      throw new Error("Не авторизован — войдите заново");
+    }
 
-      const formData = new FormData();
-      
-      formData.append("authorId", authorId);
-      formData.append("type", cardData.type);
-      formData.append("subject", cardData.subject);
-      formData.append("title", cardData.title);
-      formData.append("course", cardData.course.toString());
-      formData.append("description", cardData.description || "");
-      formData.append("study", cardData.study || "");
-      formData.append("city", cardData.city || "");
+    const formData = new FormData();
 
-      if (cardData.files && cardData.files.length > 0) {
-        cardData.files.forEach((file: any) => {
-          if (file instanceof File) {
-            formData.append("files", file);
-          }
-        });
-      } else {
-        const emptyFile = new File([""], "__NO_FILES__", { type: "text/plain" });
-        formData.append("files", emptyFile);
-      }
+    formData.append("authorId", authorId);
+    formData.append("type", cardData.type);
+    formData.append("subject", cardData.subject);
+    formData.append("title", cardData.title);
+    formData.append("course", cardData.course.toString());
+    formData.append("description", cardData.description || "");
+    formData.append("study", cardData.study || "");
+    formData.append("city", cardData.city || "");
 
-      const url = `${API_BASE_URL}/user`;
-      
-      const response = await fetch(url, {
-        method: "POST",
-        body: formData,
+    if (cardData.files && cardData.files.length > 0) {
+      cardData.files.forEach((file: any) => {
+        if (file instanceof File) {
+          formData.append("files", file);
+        }
       });
+    } else {
+      const emptyFile = new File([""], "__NO_FILES__", { type: "text/plain" });
+      formData.append("files", emptyFile);
+    }
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Ошибка создания карточки: ${response.status} - ${errorText}`);
-      }
+    const url = `${API_BASE_URL}/user`;
 
-      return response.json();
-    },
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData,
+    });
 
-  async getAllCards(): Promise<CardData[]> {
-    const response = await fetch(`${API_BASE_URL}`, {
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `Ошибка создания карточки: ${response.status} - ${errorText}`
+      );
+    }
+
+    return response.json();
+  },
+
+  async getAllCards(
+    type: string | undefined,
+    city: string | undefined,
+    study: string | undefined,
+    course: number | undefined
+  ): Promise<CardData[]> {
+    let url = API_BASE_URL;
+    if (type || city || study || course) url += "/filter?";
+
+    const params = new URLSearchParams();
+    if (type) params.append("type", type);
+    if (city) params.append("city", city);
+    if (study) params.append("study", study);
+    if (course) params.append("course", String(course));
+
+    url += params.toString();
+
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -98,11 +116,12 @@ export const cardService = {
     if (cardData.type) formData.append("type", cardData.type);
     if (cardData.subject) formData.append("subject", cardData.subject);
     if (cardData.title) formData.append("title", cardData.title);
-    if (cardData.description) formData.append("description", cardData.description);
+    if (cardData.description)
+      formData.append("description", cardData.description);
     if (cardData.study) formData.append("study", cardData.study);
     if (cardData.city) formData.append("city", cardData.city);
     if (cardData.course) formData.append("course", cardData.course.toString());
-    
+
     if (cardData.files && cardData.files.length > 0) {
       cardData.files.forEach((file: any) => {
         if (file instanceof File) {
@@ -163,9 +182,7 @@ export const cardService = {
     });
 
     if (!response.ok) {
-      throw new Error(
-        `Ошибка загрузки лайкнутых карточек: ${response.status}`
-      );
+      throw new Error(`Ошибка загрузки лайкнутых карточек: ${response.status}`);
     }
 
     return response.json();

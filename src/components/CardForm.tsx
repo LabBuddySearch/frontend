@@ -2,6 +2,7 @@ import { FC, useState, useEffect } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { cities } from "@/hooks/cities";
 import { universities } from "@/hooks/universities";
+import { workTypes } from "@/hooks/workTypes";
 
 interface CardFormData {
   workType: string;
@@ -33,16 +34,6 @@ interface FileItem {
   isExisting: boolean;
   index: number;
 }
-
-const workTypes = [
-  "Контрольная работа",
-  "Самостоятельная работа",
-  "Лабораторная работа",
-  "Курсовая работа",
-  "Зачет",
-  "Экзамен",
-  "Диплом",
-];
 
 const courses = ["1", "2", "3", "4", "5", "6"];
 
@@ -108,8 +99,11 @@ export const CardForm: FC<CardFormProps> = ({
     if (initialData.city && !cities.includes(initialData.city)) {
       setUseCustomCity(true);
     }
-    
-    if (initialData.university && !universities.includes(initialData.university)) {
+
+    if (
+      initialData.university &&
+      !universities.includes(initialData.university)
+    ) {
       setUseCustomUniversity(true);
     }
   }, [initialData.city, initialData.university]);
@@ -134,33 +128,32 @@ export const CardForm: FC<CardFormProps> = ({
 
   const getAllFileNames = (): FileItem[] => {
     const allFiles: FileItem[] = [];
-    
+
     if (formData.existingFiles && formData.existingFiles.length > 0) {
       formData.existingFiles.forEach((fileName: string, index: number) => {
-        const cleanName = fileName.split('/').pop() || fileName;
+        const cleanName = fileName.split("/").pop() || fileName;
         allFiles.push({
           name: cleanName,
           isExisting: true,
-          index
+          index,
         });
       });
     }
-    
+
     if (formData.files && formData.files.length > 0) {
       formData.files.forEach((file: File, index: number) => {
         allFiles.push({
           name: file.name,
           isExisting: false,
-          index
+          index,
         });
       });
     }
-    
+
     return allFiles;
   };
 
   const fileNames = getAllFileNames();
-
 
   return (
     <div className="h-[calc(100vh-76px)] p-6">
@@ -245,8 +238,10 @@ export const CardForm: FC<CardFormProps> = ({
                 </p>
                 <ul className="space-y-1">
                   {fileNames.map((file, index) => (
-                    <li key={`${file.isExisting ? 'existing' : 'new'}-${index}`} 
-                        className="flex items-center justify-between text-sm text-gray-600">
+                    <li
+                      key={`${file.isExisting ? "existing" : "new"}-${index}`}
+                      className="flex items-center justify-between text-sm text-gray-600"
+                    >
                       <span className="truncate" title={file.name}>
                         {file.name}
                       </span>
@@ -255,7 +250,7 @@ export const CardForm: FC<CardFormProps> = ({
                 </ul>
               </div>
             )}
-             <div className="relative">
+            <div className="relative">
               <input
                 type="file"
                 multiple
@@ -297,17 +292,23 @@ export const CardForm: FC<CardFormProps> = ({
                 onChange={(e) => setUseCustomUniversity(e.target.checked)}
                 className="mr-2"
               />
-              <label htmlFor="customUniversity" className="text-sm text-gray-600">
+              <label
+                htmlFor="customUniversity"
+                className="text-sm text-gray-600"
+              >
                 Указать другое учебное заведение
               </label>
             </div>
-            
+
             {useCustomUniversity ? (
               <input
                 type="text"
                 value={formData.university}
                 onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, university: e.target.value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    university: e.target.value,
+                  }))
                 }
                 className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
                 placeholder="Введите название учебного заведения"
@@ -316,7 +317,10 @@ export const CardForm: FC<CardFormProps> = ({
               <select
                 value={formData.university}
                 onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, university: e.target.value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    university: e.target.value,
+                  }))
                 }
                 className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-[#FF684D] focus:outline-none"
               >
@@ -345,7 +349,7 @@ export const CardForm: FC<CardFormProps> = ({
                 Указать другой город
               </label>
             </div>
-            
+
             {useCustomCity ? (
               <input
                 type="text"

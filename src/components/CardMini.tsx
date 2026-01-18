@@ -8,22 +8,25 @@ interface Props {
   onClick: () => void;
 }
 
-export const CardMini: FC<Props> = ({
-  cardData,
-  isSelected,
-  onClick
-}) => {
+export const CardMini: FC<Props> = ({ cardData, isSelected, onClick }) => {
   const borderColor = useLocalStorage(`card_color_${cardData.id}`, "#FFB4A7");
-  const rawShadow = useLocalStorage(`card_shadow_${cardData.id}`, "0_0_20px_rgba(255,180,167,0.3)");
+  const rawShadow = useLocalStorage(
+    `card_shadow_${cardData.id}`,
+    "0_0_20px_rgba(255,180,167,0.3)"
+  );
 
-  const shadowValue = rawShadow ? rawShadow.replace(/_/g, " ") : "0 0 20px rgba(255,180,167,0.3)";
+  const shadowValue = rawShadow
+    ? rawShadow.replace(/_/g, " ")
+    : "0 0 20px rgba(255,180,167,0.3)";
 
   return (
     <div
       onClick={onClick}
       style={{
-        borderColor: isSelected ? "#FF684D" : (borderColor || "#FFB4A7"),
-        boxShadow: shadowValue 
+        borderColor: borderColor || "#FFB4A7",
+        outline: isSelected ? "2px solid black" : "none",
+        outlineOffset: "2px",
+        boxShadow: shadowValue,
       }}
       className="h-48 w-36 bg-[#FFFFF5] border p-3 rounded-xl flex flex-col cursor-pointer"
     >

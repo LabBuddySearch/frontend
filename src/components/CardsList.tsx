@@ -9,12 +9,20 @@ interface Props {
   modalCardId: string | null;
   setModalCardId: (id: string | null) => void;
   refreshKey?: number;
+  typeFilter?: string | undefined;
+  cityFilter?: string | undefined;
+  studyFilter?: string | undefined;
+  courseFilter?: number | undefined;
 }
 
-export const CardsList: FC<Props> = ({ 
-  modalCardId, 
+export const CardsList: FC<Props> = ({
+  modalCardId,
   setModalCardId,
-  refreshKey = 0 
+  refreshKey = 0,
+  typeFilter,
+  cityFilter,
+  studyFilter,
+  courseFilter,
 }: Props) => {
   const [cards, setCards] = useState<CardData[]>([]);
   const [currentCard, setCurrentCard] = useState<CardData | null>(null);
@@ -24,10 +32,15 @@ export const CardsList: FC<Props> = ({
   const loadCards = async () => {
     try {
       setLoading(true);
-      const cardsData = await cardService.getAllCards();
+      const cardsData = await cardService.getAllCards(
+        typeFilter,
+        cityFilter,
+        studyFilter,
+        courseFilter
+      );
       setCards(cardsData);
     } catch (err) {
-      console.error('Ошибка загрузки карточек:', err);
+      console.error("Ошибка загрузки карточек:", err);
       setError(err instanceof Error ? err.message : "Ошибка загрузки карточек");
     } finally {
       setLoading(false);
@@ -36,53 +49,58 @@ export const CardsList: FC<Props> = ({
 
   useEffect(() => {
     loadCards();
-  }, [refreshKey]);
+  }, [refreshKey, typeFilter, cityFilter, studyFilter, courseFilter]);
 
   useEffect(() => {
     if (modalCardId) {
-      const foundCard = cards.find(card => card.id === modalCardId);
+      const foundCard = cards.find((card) => card.id === modalCardId);
       setCurrentCard(foundCard || null);
     }
   }, [modalCardId, cards]);
 
   const refreshCurrentCard = async () => {
     if (!modalCardId) return;
-    
+
     try {
-      const allCards = await cardService.getAllCards();
-      const updatedCard = allCards.find(card => card.id === modalCardId);
+      const allCards = await cardService.getAllCards(
+        typeFilter,
+        cityFilter,
+        studyFilter,
+        courseFilter
+      );
+      const updatedCard = allCards.find((card) => card.id === modalCardId);
       if (updatedCard) {
         setCurrentCard(updatedCard);
-        setCards(prev => prev.map(card => 
-          card.id === modalCardId ? updatedCard : card
-        ));
+        setCards((prev) =>
+          prev.map((card) => (card.id === modalCardId ? updatedCard : card))
+        );
       }
     } catch (err) {
-      console.error('Ошибка обновления карточки:', err);
+      console.error("Ошибка обновления карточки:", err);
     }
   };
   const handleLike = async () => {
     if (!modalCardId) return;
-    
+
     try {
       await likeService.likeCard(modalCardId);
       await refreshCurrentCard();
       setModalCardId(null);
     } catch (err) {
-      console.error('Ошибка лайка:', err);
-      alert('Не удалось лайкнуть карточку');
+      console.error("Ошибка лайка:", err);
+      alert("Не удалось лайкнуть карточку");
     }
   };
   const handleUnlike = async () => {
     if (!modalCardId) return;
-    
+
     try {
       await likeService.dislikeCard(modalCardId);
       await refreshCurrentCard();
       setModalCardId(null);
     } catch (err) {
-      console.error('Ошибка дизлайка:', err);
-      alert('Не удалось убрать лайк');
+      console.error("Ошибка дизлайка:", err);
+      alert("Не удалось убрать лайк");
     }
   };
 
@@ -102,20 +120,18 @@ export const CardsList: FC<Props> = ({
     );
   }
 
+  if (!cards.length) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-lg">Карточки не найдены</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative flex flex-wrap justify-center bg-[#FFFFF5] py-3 pl-[6px] gap-16 max-h-[calc(100vh-76px)] overflow-y-auto [scrollbar-gutter:stable] custom-scrollbar">
-      {modalCardId && currentCard && (
-        <ModalCard 
-          cardData={currentCard} 
-          onClose={() => setModalCardId(null)}
-          isFromMiniList={false}
-          onLike={handleLike}
-          onUnlike={handleUnlike}
-          onLikeToggle={loadCards}
-        />
-      )}
-      {cards.map(card => (
-        <Card 
+    <div className="relative flex flex-wrap justify-center bg-[#FFFFF5] py-3 pl-[6px] gap-16 overflow-y-auto [scrollbar-gutter:stable] custom-scrollbar">
+      {cards.map((card) => (
+        <Card
           key={card.id}
           cardData={card}
           onClick={() => setModalCardId(card.id)}

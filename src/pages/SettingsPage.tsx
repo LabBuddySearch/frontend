@@ -2,6 +2,10 @@ import { FC, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/Button";
 import { MenuDropdown } from "@/components/MenuDropdown";
+import { universities } from "@/hooks/universities";
+import { cities } from "@/hooks/cities";
+import { courses } from "@/hooks/courses";
+import { settingsService } from "@/services/settingsService";
 
 const SettingsPage: FC = () => {
   const navigate = useNavigate();
@@ -11,12 +15,12 @@ const SettingsPage: FC = () => {
     university: "",
     city: "",
     course: "",
-    contacts: [""]
+    contacts: [""],
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
   const [useCustomCity, setUseCustomCity] = useState(false);
   const [useCustomStudy, setUseCustomStudy] = useState(false);
@@ -24,41 +28,54 @@ const SettingsPage: FC = () => {
   // Загружаем данные пользователя при монтировании компонента
   useEffect(() => {
     const loadUserData = () => {
-      const userName = localStorage.getItem('userName');
-      const userEmail = localStorage.getItem('userEmail');
-      const userCity = localStorage.getItem('userCity');
-      const userStudy = localStorage.getItem('userStudy');
-      const userData = localStorage.getItem('user');
-      
+      const userName = localStorage.getItem("userName");
+      const userEmail = localStorage.getItem("userEmail");
+      const userCity = localStorage.getItem("userCity");
+      const userStudy = localStorage.getItem("userStudy");
+      const userCourse = localStorage.getItem("userCourse") || "";
+      const userData = localStorage.getItem("user");
+
       if (userData) {
         try {
           const parsedUser = JSON.parse(userData);
           const userStudyValue = userStudy || parsedUser.study || "";
           const userCityValue = userCity || parsedUser.city || "";
-          
+
+          const parsedSocialLinks = parsedUser.socialLinks;
+          const contacts = [];
+          if (parsedSocialLinks?.additionalProp1)
+            contacts.push(parsedSocialLinks.additionalProp1);
+          if (parsedSocialLinks?.additionalProp2)
+            contacts.push(parsedSocialLinks.additionalProp2);
+          if (parsedSocialLinks?.additionalProp3)
+            contacts.push(parsedSocialLinks.additionalProp3);
+          const contactsValue = contacts.length ? contacts : [""];
+
           // Проверяем, есть ли значение в стандартных списках
           const isStudyInList = universities.includes(userStudyValue);
           const isCityInList = cities.includes(userCityValue);
-          
+
           setUseCustomStudy(!isStudyInList);
           setUseCustomCity(!isCityInList);
-          
-          setProfileData(prev => ({
+
+          setProfileData((prev) => ({
             ...prev,
             login: userName || parsedUser.name || "",
             university: userStudyValue,
-            city: userCityValue
+            city: userCityValue,
+            course: userCourse,
+            contacts: contactsValue,
           }));
         } catch (error) {
-          console.error('Ошибка парсинга user данных:', error);
+          console.error("Ошибка парсинга user данных:", error);
         }
       } else {
         // Если нет JSON, используем отдельные поля
-        setProfileData(prev => ({
+        setProfileData((prev) => ({
           ...prev,
           login: userName || "",
           university: userStudy || "",
-          city: userCity || ""
+          city: userCity || "",
         }));
       }
     };
@@ -66,120 +83,128 @@ const SettingsPage: FC = () => {
     loadUserData();
   }, []);
 
-  const universities = [
-    "МГУ им. М.В. Ломоносова",
-    "СПБГУ",
-    "МФТИ",
-    "ВШЭ",
-    "МГТУ им. Баумана",
-    "МГИМО",
-    "РЭУ им. Плеханова",
-    "МАИ",
-    "МИФИ",
-    "РГГУ",
-    "МТУСИ"
-  ];
-
-  const cities = [
-    "Москва",
-    "Санкт-Петербург",
-    "Новосибирск",
-    "Екатеринбург",
-    "Казань",
-    "Нижний Новгород",
-    "Челябинск",
-    "Самара",
-    "Омск",
-    "Ростов-на-Дону",
-    "Уфа",
-    "Красноярск",
-    "Воронеж",
-    "Пермь",
-    "Волгоград"
-  ];
-
-  const courses = ["1 курс", "2 курс", "3 курс", "4 курс", "5 курс", "6 курс"];
-
-  const handleProfileSubmit = (e: React.FormEvent) => {
+  const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Сохранены данные профиля:", profileData);
-    
-    localStorage.setItem('userName', profileData.login);
-    localStorage.setItem('userStudy', profileData.university);
-    localStorage.setItem('userCity', profileData.city);
-    
-    const currentUser = localStorage.getItem('user');
-    if (currentUser) {
-      try {
-        const parsedUser = JSON.parse(currentUser);
-        const updatedUser = {
-          ...parsedUser,
-          name: profileData.login,
-          study: profileData.university,
-          city: profileData.city
-        };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-      } catch (error) {
-        console.error('Ошибка обновления user данных:', error);
+
+    const socialLinks = {
+      additionalProp1: profileData.contacts?.[0] || "",
+      additionalProp2: profileData.contacts?.[1] || "",
+      additionalProp3: profileData.contacts?.[2] || "",
+    };
+
+    try {
+      const data = await settingsService.changeProfile({
+        name: profileData.login,
+        city: profileData.city,
+        study: profileData.university,
+        socialLinks,
+      });
+
+      const newName = data.name || profileData.login;
+      const newStudy = data.study || profileData.university;
+      const newCity = data.city || profileData.city;
+
+      localStorage.setItem("userName", newName);
+      localStorage.setItem("userStudy", newStudy);
+      localStorage.setItem("userCity", newCity);
+      localStorage.setItem("userCourse", profileData.course);
+
+      const currentUser = localStorage.getItem("user");
+      if (currentUser) {
+        try {
+          const parsedUser = JSON.parse(currentUser);
+          const updatedUser = {
+            ...parsedUser,
+            name: newName,
+            study: newStudy,
+            city: newCity,
+            socialLinks: data.socialLinks,
+          };
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+        } catch (error) {
+          console.error("Ошибка обновления user данных:", error);
+        }
+      }
+
+      const isStudyInList = universities.includes(profileData.university);
+      const isCityInList = cities.includes(profileData.city);
+
+      setUseCustomStudy(!isStudyInList);
+      setUseCustomCity(!isCityInList);
+
+      alert("Данные профиля сохранены!");
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message);
       }
     }
-    
-    const isStudyInList = universities.includes(profileData.university);
-    const isCityInList = cities.includes(profileData.city);
-    
-    setUseCustomStudy(!isStudyInList);
-    setUseCustomCity(!isCityInList);
-    
-    alert("Данные профиля сохранены!");
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const changePasswordBtnDisabled =
+    !passwordData.currentPassword ||
+    !passwordData.newPassword ||
+    !passwordData.confirmPassword;
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       alert("Новый пароль и подтверждение не совпадают!");
       return;
     }
-    
-    console.log("Смена пароля:", passwordData);
-    
+
+    try {
+      await settingsService.changePassword({
+        oldPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message);
+      }
+
+      return;
+    }
+
     setPasswordData({
       currentPassword: "",
       newPassword: "",
-      confirmPassword: ""
+      confirmPassword: "",
     });
-    
+
     alert("Пароль успешно изменен!");
   };
 
   const addContactField = () => {
     if (profileData.contacts.length < 3) {
-      setProfileData(prev => ({
+      setProfileData((prev) => ({
         ...prev,
-        contacts: [...prev.contacts, ""]
+        contacts: [...prev.contacts, ""],
       }));
     }
   };
 
   const updateContact = (index: number, value: string) => {
-    setProfileData(prev => ({
+    setProfileData((prev) => ({
       ...prev,
-      contacts: prev.contacts.map((contact, i) => i === index ? value : contact)
+      contacts: prev.contacts.map((contact, i) =>
+        i === index ? value : contact
+      ),
     }));
   };
 
   const removeContact = (index: number) => {
     if (profileData.contacts.length > 1) {
-      setProfileData(prev => ({
+      setProfileData((prev) => ({
         ...prev,
-        contacts: prev.contacts.filter((_, i) => i !== index)
+        contacts: prev.contacts.filter((_, i) => i !== index),
       }));
     }
   };
 
   return (
     <div className="min-h-screen flex bg-[#FFFFF5]">
-      <aside className="w-96 min-w-96 border-r border-gray-200">
+      <aside className="w-[174.8px] sm:w-[348.8px] flex-shrink-0 border-r border-gray-200">
         <MenuDropdown />
       </aside>
       <main className="flex-1">
@@ -219,9 +244,7 @@ const SettingsPage: FC = () => {
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
                 Личные данные
               </h2>
-              <p className="text-gray-600 mb-6">
-                Можете сменить данные
-              </p>
+              <p className="text-gray-600 mb-6">Можете сменить данные</p>
 
               <form onSubmit={handleProfileSubmit} className="space-y-6">
                 <div>
@@ -231,7 +254,12 @@ const SettingsPage: FC = () => {
                   <input
                     type="text"
                     value={profileData.login}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, login: e.target.value }))}
+                    onChange={(e) =>
+                      setProfileData((prev) => ({
+                        ...prev,
+                        login: e.target.value,
+                      }))
+                    }
                     className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
                     placeholder="Введите ваше имя"
                   />
@@ -249,28 +277,43 @@ const SettingsPage: FC = () => {
                       onChange={(e) => setUseCustomStudy(e.target.checked)}
                       className="mr-2"
                     />
-                    <label htmlFor="customStudy" className="text-sm text-gray-600">
+                    <label
+                      htmlFor="customStudy"
+                      className="text-sm text-gray-600"
+                    >
                       Указать другое учебное заведение
                     </label>
                   </div>
-                  
+
                   {useCustomStudy ? (
                     <input
                       type="text"
                       value={profileData.university}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, university: e.target.value }))}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          university: e.target.value,
+                        }))
+                      }
                       className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
                       placeholder="Введите ваше учебное заведение"
                     />
                   ) : (
                     <select
                       value={profileData.university}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, university: e.target.value }))}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          university: e.target.value,
+                        }))
+                      }
                       className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-[#FF684D] focus:outline-none"
                     >
                       <option value="">Выберите учебное заведение</option>
-                      {universities.map(uni => (
-                        <option key={uni} value={uni}>{uni}</option>
+                      {universities.map((uni) => (
+                        <option key={uni} value={uni}>
+                          {uni}
+                        </option>
                       ))}
                     </select>
                   )}
@@ -288,28 +331,43 @@ const SettingsPage: FC = () => {
                       onChange={(e) => setUseCustomCity(e.target.checked)}
                       className="mr-2"
                     />
-                    <label htmlFor="customCity" className="text-sm text-gray-600">
+                    <label
+                      htmlFor="customCity"
+                      className="text-sm text-gray-600"
+                    >
                       Указать другой город
                     </label>
                   </div>
-                  
+
                   {useCustomCity ? (
                     <input
                       type="text"
                       value={profileData.city}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, city: e.target.value }))}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          city: e.target.value,
+                        }))
+                      }
                       className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
                       placeholder="Введите ваш город"
                     />
                   ) : (
                     <select
                       value={profileData.city}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, city: e.target.value }))}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          city: e.target.value,
+                        }))
+                      }
                       className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-[#FF684D] focus:outline-none"
                     >
                       <option value="">Выберите город</option>
-                      {cities.map(city => (
-                        <option key={city} value={city}>{city}</option>
+                      {cities.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
                       ))}
                     </select>
                   )}
@@ -321,12 +379,19 @@ const SettingsPage: FC = () => {
                   </label>
                   <select
                     value={profileData.course}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, course: e.target.value }))}
+                    onChange={(e) =>
+                      setProfileData((prev) => ({
+                        ...prev,
+                        course: e.target.value,
+                      }))
+                    }
                     className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-[#FF684D] focus:outline-none"
                   >
                     <option value="">Выберите курс</option>
-                    {courses.map(course => (
-                      <option key={course} value={course}>{course}</option>
+                    {courses.map((course) => (
+                      <option key={course} value={course}>
+                        {course}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -394,7 +459,8 @@ const SettingsPage: FC = () => {
                 Изменение пароля
               </h2>
               <p className="text-gray-600 mb-6">
-                Подберите или сгенерируйте сложный пароль, чтобы обеспечить безопасную работу
+                Подберите или сгенерируйте сложный пароль, чтобы обеспечить
+                безопасную работу
               </p>
 
               <form onSubmit={handlePasswordSubmit} className="space-y-6">
@@ -405,7 +471,12 @@ const SettingsPage: FC = () => {
                   <input
                     type="password"
                     value={passwordData.currentPassword}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({
+                        ...prev,
+                        currentPassword: e.target.value,
+                      }))
+                    }
                     className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
                     placeholder="Введите текущий пароль"
                   />
@@ -418,7 +489,12 @@ const SettingsPage: FC = () => {
                   <input
                     type="password"
                     value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({
+                        ...prev,
+                        newPassword: e.target.value,
+                      }))
+                    }
                     className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
                     placeholder="Введите новый пароль"
                   />
@@ -431,7 +507,12 @@ const SettingsPage: FC = () => {
                   <input
                     type="password"
                     value={passwordData.confirmPassword}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({
+                        ...prev,
+                        confirmPassword: e.target.value,
+                      }))
+                    }
                     className="w-full p-3 border border-gray-300 rounded-lg focus:border-[#FF684D] focus:outline-none"
                     placeholder="Повторите новый пароль"
                   />
@@ -440,7 +521,8 @@ const SettingsPage: FC = () => {
                 <div className="pt-4">
                   <button
                     type="submit"
-                    className="px-6 py-2 bg-[#FF684D] text-white rounded-lg hover:bg-[#E55A40] transition-colors"
+                    className="px-6 py-2 bg-[#FF684D] text-white rounded-lg hover:bg-[#E55A40] transition-colors disabled:opacity-50 disabled:hover:bg-[#FF684D]"
+                    disabled={changePasswordBtnDisabled}
                   >
                     Сменить пароль
                   </button>
