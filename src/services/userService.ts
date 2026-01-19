@@ -8,7 +8,7 @@ export const userService = {
   } | null> => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/users/${authorId}`,
+        `/api/users/${authorId}`,
         {
           method: "GET",
           headers: {

@@ -2,7 +2,7 @@ import { RegisterResponse } from "@/types/auth";
 import { ChangePasswordDto, UserUpdateRequest } from "@/types/settings";
 import { User } from "@/types/user";
 
-const API_BASE_URL = "http://localhost:8080/api/settings";
+const API_BASE_URL = "/api/settings";
 
 export const settingsService = {
   changePassword: async (passwordData: ChangePasswordDto): Promise<void> => {
@@ -41,7 +41,7 @@ export const settingsService = {
   ): Promise<RegisterResponse> => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/users/${localStorage.getItem("authorId")}`, // метод из profile-controller возвращает json с рекурсией
+        `/api/users/${localStorage.getItem("authorId")}`, // метод из profile-controller возвращает json с рекурсией
         {
           method: "PUT",
           headers: {

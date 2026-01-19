@@ -1,6 +1,6 @@
 import { CreateCardRequest, CardResponse, CardData } from "@/types/card";
 
-const API_BASE_URL = "http://localhost:8080/api/cards";
+const API_BASE_URL = "/api/cards";
 
 export const cardService = {
   async createCard(cardData: CreateCardRequest): Promise<CardResponse> {

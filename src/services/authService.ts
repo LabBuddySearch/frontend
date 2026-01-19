@@ -5,8 +5,8 @@ import {
   UserRegisterDto,
 } from "@/types/auth";
 
-const API_BASE_URL = "http://localhost:8080/api/users";
-const API_BASE_URL_AUTH = "http://localhost:8080/api/auth";
+const API_BASE_URL = "/api/users";
+const API_BASE_URL_AUTH = "/api/auth";
 
 export const authService = {
   async login(credentials: AuthRequest): Promise<AuthResponse> {

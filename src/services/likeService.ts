@@ -1,6 +1,6 @@
 import { Like } from "@/types/card";
 
-const API_BASE_URL = "http://localhost:8080/api/like";
+const API_BASE_URL = "/api/like";
 
 export const likeService = {
   async likeCard(cardId: string): Promise<number> {
